@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { supabase } from '@/supabase/client'
 import { useRouter } from 'next/navigation'
-import { BarChart3, Mail, Lock } from 'lucide-react'
+import { BarChart3, Mail, Lock, Info } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Auth() {
@@ -12,7 +12,14 @@ export default function Auth() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [isDemoMode, setIsDemoMode] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    setIsDemoMode(supabaseUrl.includes('placeholder') || supabaseKey.includes('placeholder'))
+  }, [])
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,7 +33,12 @@ export default function Auth() {
           password,
         })
         if (error) throw error
-        setMessage('Check your email for the confirmation link!')
+        if (isDemoMode) {
+          setMessage('Demo mode: Account created successfully! You can now sign in.')
+          setIsSignUp(false)
+        } else {
+          setMessage('Check your email for the confirmation link!')
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -36,7 +48,12 @@ export default function Auth() {
         router.push('/')
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'An error occurred')
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred'
+      if (errorMessage.includes('fetch')) {
+        setMessage('Connection error. Please check your Supabase configuration or use demo mode.')
+      } else {
+        setMessage(errorMessage)
+      }
     } finally {
       setLoading(false)
     }
@@ -67,6 +84,17 @@ export default function Auth() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {isDemoMode && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-center space-x-2">
+                <Info className="w-4 h-4 text-blue-600" />
+                <p className="text-sm text-blue-700">
+                  <strong>Demo Mode:</strong> Using mock authentication. Any email/password will work for testing.
+                </p>
+              </div>
+            </div>
+          )}
+
           <form className="space-y-6" onSubmit={handleAuth}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">

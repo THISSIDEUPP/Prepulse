@@ -109,6 +109,45 @@ Daily email alerts are sent via the Resend API:
 
 ## 🚀 Deployment
 
+### Quick Start (Demo Mode)
+For immediate testing without external services:
+
+1. **Clone and Install**:
+   ```bash
+   git clone <repository-url>
+   cd prepulse
+   npm install
+   ```
+
+2. **Run in Demo Mode**:
+   ```bash
+   npm run dev
+   ```
+   The app will automatically use mock authentication when placeholder credentials are detected.
+
+### Production Setup
+
+1. **Supabase Configuration**:
+   - Create a new project at [supabase.com](https://supabase.com)
+   - Go to Settings > API to get your URL and anon key
+   - Run the SQL schema from `src/utils/database.sql` in your Supabase SQL editor
+
+2. **Environment Configuration**:
+   Update `.env.local` with your real credentials:
+   ```bash
+   # Replace placeholder values with real Supabase credentials
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_actual_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+   # Add your Resend API key for email functionality
+   RESEND_API_KEY=your_resend_api_key
+   ```
+
+3. **Email Setup** (Optional):
+   - Sign up at [resend.com](https://resend.com)
+   - Get your API key and add it to `.env.local`
+
 ### Vercel Deployment
 
 1. Connect your GitHub repository to Vercel
@@ -122,6 +161,32 @@ Ensure all environment variables are set in your deployment platform:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `RESEND_API_KEY`
+
+## Authentication Modes
+
+### Demo Mode
+- **When**: Placeholder credentials are detected in `.env.local`
+- **Features**: Mock authentication using localStorage
+- **Usage**: Perfect for development and testing
+- **Sign-in**: Any email/password combination works
+
+### Production Mode  
+- **When**: Real Supabase credentials are configured
+- **Features**: Full Supabase authentication with email verification
+- **Usage**: Live deployment with real user accounts
+- **Sign-in**: Requires valid user registration
+
+## Troubleshooting
+
+### Authentication Issues
+- **"Failed to fetch"**: Check if you're using placeholder Supabase credentials (demo mode should activate automatically)
+- **"Connection error"**: Verify your Supabase URL and API key are correct
+- **Email not working**: Ensure Resend API key is configured for email alerts
+
+### Development Issues
+- **Build errors**: Run `npm run build` to check for TypeScript errors
+- **Styling issues**: Ensure Tailwind CSS is properly configured
+- **Database errors**: Verify the SQL schema has been applied to your Supabase project
 
 ## 📱 Usage
 
