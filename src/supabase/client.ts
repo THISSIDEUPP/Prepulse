@@ -14,9 +14,9 @@ interface MockUser {
 interface MockAuthResponse {
   data: {
     user: MockUser | null
-    session: any
+    session: { user: MockUser } | null
   }
-  error: any
+  error: { message: string } | null
 }
 
 const mockAuth = {
@@ -116,7 +116,7 @@ const createMockSupabaseClient = () => ({
 })
 
 export const supabase = isPlaceholder 
-  ? createMockSupabaseClient() as any
+  ? (createMockSupabaseClient() as unknown as ReturnType<typeof createClient>)
   : createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
