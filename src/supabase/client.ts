@@ -85,6 +85,19 @@ const mockAuth = {
   },
 
   getUser: async () => {
+    if (typeof window === 'undefined') {
+      return {
+        data: { 
+          user: { 
+            id: 'mock-server-user', 
+            email: 'server@example.com', 
+            created_at: new Date().toISOString() 
+          } 
+        },
+        error: null
+      }
+    }
+    
     const session = localStorage.getItem('mock-auth-session')
     if (session) {
       const parsedSession = JSON.parse(session)
@@ -107,7 +120,19 @@ const createMockSupabaseClient = () => ({
   from: () => ({
     select: () => ({
       eq: () => ({
-        single: () => Promise.resolve({ data: null, error: null })
+        single: () => Promise.resolve({ data: null, error: null }),
+        in: () => ({
+          order: () => Promise.resolve({ data: [], error: null })
+        }),
+        order: () => ({
+          limit: () => Promise.resolve({ data: [], error: null })
+        })
+      }),
+      in: () => ({
+        order: () => Promise.resolve({ data: [], error: null })
+      }),
+      order: () => ({
+        limit: () => Promise.resolve({ data: [], error: null })
       })
     }),
     insert: () => Promise.resolve({ data: null, error: null }),

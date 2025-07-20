@@ -11,6 +11,32 @@ export interface DailyPulse {
   created_by: string
 }
 
+export interface MarketData {
+  id: string
+  date: string
+  symbol: 'SPY' | 'IWM'
+  open_price: number
+  high_price: number
+  low_price: number
+  close_price: number
+  volume: number
+  rsi_14?: number
+  macd_line?: number
+  macd_signal?: number
+  macd_histogram?: number
+  created_at: string
+}
+
+export interface YahooFinanceData {
+  symbol: string
+  date: string
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+}
+
 export interface User {
   id: string
   email: string

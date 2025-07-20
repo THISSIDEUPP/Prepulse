@@ -3,8 +3,9 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/supabase/client'
 import { useRouter } from 'next/navigation'
-import { BarChart3, Save, Send, ArrowLeft } from 'lucide-react'
+import { BarChart3, Save, Send, ArrowLeft, Download, Zap, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
+import { MarketData } from '@/types'
 
 interface AuthUser {
   id: string
@@ -16,7 +17,10 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [sending, setSending] = useState(false)
+  const [fetching, setFetching] = useState(false)
+  const [generating, setGenerating] = useState(false)
   const [message, setMessage] = useState('')
+  const [marketData, setMarketData] = useState<MarketData[]>([])
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -47,22 +51,34 @@ export default function Admin() {
 
   const loadTodaysPulse = async () => {
     const today = new Date().toISOString().split('T')[0]
-    const { data } = await supabase
+    
+    const { data: pulseData } = await supabase
       .from('daily_pulses')
       .select('*')
       .eq('date', today)
       .single()
 
-    if (data) {
+    if (pulseData) {
       setFormData({
-        date: data.date,
-        spy_iwm_rotation: data.spy_iwm_rotation,
-        breadth_score: data.breadth_score,
-        leading_sector: data.leading_sector,
-        lagging_sector: data.lagging_sector,
-        market_strength: data.market_strength,
-        summary: data.summary
+        date: pulseData.date,
+        spy_iwm_rotation: pulseData.spy_iwm_rotation,
+        breadth_score: pulseData.breadth_score,
+        leading_sector: pulseData.leading_sector,
+        lagging_sector: pulseData.lagging_sector,
+        market_strength: pulseData.market_strength,
+        summary: pulseData.summary
       })
+    }
+
+    const { data: marketData } = await supabase
+      .from('market_data')
+      .select('*')
+      .eq('date', today)
+      .in('symbol', ['SPY', 'IWM'])
+      .order('symbol')
+
+    if (marketData) {
+      setMarketData(marketData)
     }
   }
 
@@ -84,6 +100,70 @@ export default function Admin() {
       setMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleFetchMarketData = async () => {
+    setFetching(true)
+    setMessage('')
+
+    try {
+      const response = await fetch('/api/fetch-market-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) throw new Error('Failed to fetch market data')
+      const result = await response.json()
+      
+      if (result.success) {
+        setMessage('Market data fetched successfully!')
+        
+        const fetchedMarketData = result.results
+          .filter((r: { success: boolean; data?: unknown }) => r.success)
+          .map((r: { success: boolean; data: unknown }) => r.data)
+        
+        console.log('Fetched market data:', fetchedMarketData)
+        setMarketData(fetchedMarketData)
+        console.log('Market data state should be updated')
+      } else {
+        setMessage(`Error: ${result.error}`)
+      }
+    } catch (error) {
+      setMessage(`Error fetching data: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setFetching(false)
+    }
+  }
+
+  const handleGeneratePulse = async () => {
+    setGenerating(true)
+    setMessage('')
+
+    try {
+      const response = await fetch('/api/generate-pulse', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ marketData })
+      })
+
+      if (!response.ok) throw new Error('Failed to generate pulse')
+      const result = await response.json()
+      
+      if (result.success) {
+        setMessage('Pulse generated successfully!')
+        loadTodaysPulse()
+      } else {
+        setMessage(`Error: ${result.error}`)
+      }
+    } catch (error) {
+      setMessage(`Error generating pulse: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setGenerating(false)
     }
   }
 
@@ -155,6 +235,54 @@ export default function Admin() {
           </div>
 
           <div className="p-6 space-y-6">
+            {marketData.length > 0 && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Today&apos;s Market Data</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {marketData.map((data) => (
+                    <div key={data.symbol} className="bg-white p-3 rounded border">
+                      <h4 className="font-semibold text-gray-800">{data.symbol}</h4>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <div>Open: ${data.open_price.toFixed(2)} | Close: ${data.close_price.toFixed(2)}</div>
+                        <div>High: ${data.high_price.toFixed(2)} | Low: ${data.low_price.toFixed(2)}</div>
+                        <div>Volume: {(data.volume / 1000000).toFixed(1)}M</div>
+                        {data.rsi_14 && <div>RSI(14): {data.rsi_14.toFixed(1)}</div>}
+                        {data.macd_line && <div>MACD: {data.macd_line.toFixed(3)}</div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex space-x-4 mb-6">
+              <button
+                onClick={handleFetchMarketData}
+                disabled={fetching}
+                className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download className="w-4 h-4" />
+                <span>{fetching ? 'Fetching...' : 'Fetch Market Data'}</span>
+              </button>
+
+              <button
+                onClick={handleGeneratePulse}
+                disabled={generating || marketData.length === 0}
+                className="flex items-center space-x-2 bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Zap className="w-4 h-4" />
+                <span>{generating ? 'Generating...' : 'Auto-Generate Pulse'}</span>
+              </button>
+
+              <button
+                onClick={loadTodaysPulse}
+                className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Refresh</span>
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
