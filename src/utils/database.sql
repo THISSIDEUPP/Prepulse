@@ -88,3 +88,27 @@ CREATE INDEX idx_daily_pulses_created_at ON public.daily_pulses(created_at);
 CREATE INDEX idx_market_data_date ON public.market_data(date);
 CREATE INDEX idx_market_data_symbol ON public.market_data(symbol);
 CREATE INDEX idx_market_data_date_symbol ON public.market_data(date, symbol);
+
+CREATE TABLE public.short_interest_data (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  date DATE NOT NULL,
+  symbol TEXT NOT NULL CHECK (symbol IN ('SPY', 'IWM')),
+  short_interest_ratio DECIMAL(6,2) NOT NULL,
+  short_interest_percent_float DECIMAL(6,2) NOT NULL,
+  total_shares_shorted BIGINT NOT NULL,
+  last_report_date DATE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(date, symbol)
+);
+
+ALTER TABLE public.short_interest_data ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view short interest data" ON public.short_interest_data
+  FOR SELECT USING (true);
+
+CREATE POLICY "Only authenticated users can insert short interest data" ON public.short_interest_data
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE INDEX idx_short_interest_date ON public.short_interest_data(date);
+CREATE INDEX idx_short_interest_symbol ON public.short_interest_data(symbol);
+CREATE INDEX idx_short_interest_date_symbol ON public.short_interest_data(date, symbol);

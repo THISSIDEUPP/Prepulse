@@ -92,6 +92,12 @@ export default function Home() {
                   >
                     Admin
                   </Link>
+                  <Link
+                    href="/short-interest"
+                    className="bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-700"
+                  >
+                    Short Interest
+                  </Link>
                   <button
                     onClick={() => supabase.auth.signOut()}
                     className="text-gray-600 hover:text-gray-900 text-sm"

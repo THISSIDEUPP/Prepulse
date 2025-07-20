@@ -43,3 +43,20 @@ export interface User {
   is_admin: boolean
   created_at: string
 }
+
+export interface ShortInterestData {
+  id: string
+  date: string
+  symbol: 'SPY' | 'IWM'
+  short_interest_ratio: number
+  short_interest_percent_float: number
+  total_shares_shorted: number
+  last_report_date: string
+  created_at: string
+}
+
+export interface ShortInterestSignals {
+  elevated_short_interest: boolean
+  cooling_shorts: boolean
+  squeeze_watch: boolean
+}
