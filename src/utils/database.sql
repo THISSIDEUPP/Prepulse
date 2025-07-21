@@ -112,3 +112,56 @@ CREATE POLICY "Only authenticated users can insert short interest data" ON publi
 CREATE INDEX idx_short_interest_date ON public.short_interest_data(date);
 CREATE INDEX idx_short_interest_symbol ON public.short_interest_data(symbol);
 CREATE INDEX idx_short_interest_date_symbol ON public.short_interest_data(date, symbol);
+
+CREATE TABLE public.support_resistance_data (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  date DATE NOT NULL,
+  symbol TEXT NOT NULL CHECK (symbol IN ('SPY', 'IWM')),
+  pivot_point DECIMAL(10,4) NOT NULL,
+  resistance_1 DECIMAL(10,4) NOT NULL,
+  resistance_2 DECIMAL(10,4) NOT NULL,
+  resistance_3 DECIMAL(10,4) NOT NULL,
+  support_1 DECIMAL(10,4) NOT NULL,
+  support_2 DECIMAL(10,4) NOT NULL,
+  support_3 DECIMAL(10,4) NOT NULL,
+  fibonacci_618 DECIMAL(10,4) NOT NULL,
+  fibonacci_382 DECIMAL(10,4) NOT NULL,
+  volume_profile_poc DECIMAL(10,4) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(date, symbol)
+);
+
+ALTER TABLE public.support_resistance_data ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view support resistance data" ON public.support_resistance_data
+  FOR SELECT USING (true);
+
+CREATE POLICY "Only authenticated users can insert support resistance data" ON public.support_resistance_data
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE INDEX idx_support_resistance_date ON public.support_resistance_data(date);
+CREATE INDEX idx_support_resistance_symbol ON public.support_resistance_data(symbol);
+CREATE INDEX idx_support_resistance_date_symbol ON public.support_resistance_data(date, symbol);
+
+CREATE TABLE public.lunar_data (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  date DATE NOT NULL UNIQUE,
+  moon_phase TEXT NOT NULL CHECK (moon_phase IN ('NEW_MOON', 'WAXING_CRESCENT', 'FIRST_QUARTER', 'WAXING_GIBBOUS', 'FULL_MOON', 'WANING_GIBBOUS', 'LAST_QUARTER', 'WANING_CRESCENT')),
+  moon_phase_percent INTEGER NOT NULL CHECK (moon_phase_percent >= 0 AND moon_phase_percent <= 100),
+  is_saturn_favorable BOOLEAN NOT NULL DEFAULT FALSE,
+  market_bias TEXT NOT NULL CHECK (market_bias IN ('BULLISH', 'BEARISH', 'NEUTRAL')),
+  volatility_forecast TEXT NOT NULL CHECK (volatility_forecast IN ('HIGH', 'MEDIUM', 'LOW')),
+  optimal_trading_window TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.lunar_data ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view lunar data" ON public.lunar_data
+  FOR SELECT USING (true);
+
+CREATE POLICY "Only authenticated users can insert lunar data" ON public.lunar_data
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE INDEX idx_lunar_data_date ON public.lunar_data(date);
+CREATE INDEX idx_lunar_data_moon_phase ON public.lunar_data(moon_phase);

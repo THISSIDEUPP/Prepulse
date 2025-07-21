@@ -98,6 +98,12 @@ export default function Home() {
                   >
                     Short Interest
                   </Link>
+                  <Link
+                    href="/support-resistance"
+                    className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700"
+                  >
+                    S/R Levels
+                  </Link>
                   <button
                     onClick={() => supabase.auth.signOut()}
                     className="text-gray-600 hover:text-gray-900 text-sm"
