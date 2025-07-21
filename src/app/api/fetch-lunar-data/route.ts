@@ -1,12 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/supabase/client'
 
-interface LunarPhaseData {
-  date: string
-  phase: string
-  illumination: number
-}
-
 function calculateMoonPhase(date: Date): { phase: string; illumination: number } {
   const lunarCycle = 29.53058867
   const knownNewMoon = new Date('2000-01-06T18:14:00Z')
@@ -87,13 +81,15 @@ export async function POST() {
     const optimalWindow = getOptimalTradingWindow(phase, saturnFavorable)
 
     const lunarData = {
+      id: `lunar-${todayString}`,
       date: todayString,
       moon_phase: phase,
       moon_phase_percent: illumination,
       is_saturn_favorable: saturnFavorable,
       market_bias: marketBias,
       volatility_forecast: volatilityForecast,
-      optimal_trading_window: optimalWindow
+      optimal_trading_window: optimalWindow,
+      created_at: new Date().toISOString()
     }
 
     const { error } = await supabase

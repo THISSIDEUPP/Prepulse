@@ -210,6 +210,9 @@ export default function Admin() {
               <Link href="/short-interest" className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600">Short Interest</span>
               </Link>
+              <Link href="/support-resistance" className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">S/R Levels</span>
+              </Link>
             </div>
             <div className="flex items-center space-x-2">
               <BarChart3 className="w-8 h-8 text-blue-600" />
