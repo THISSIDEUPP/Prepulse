@@ -118,7 +118,11 @@ export async function POST() {
       }
     }
 
-    return NextResponse.json({ success: true, results })
+    return NextResponse.json({ 
+      success: results.some(r => r.success), 
+      results,
+      message: results.every(r => !r.success) ? 'No data available for calculations' : 'Calculations completed'
+    })
   } catch (error) {
     console.error('Error in calculate-support-resistance:', error)
     return NextResponse.json(

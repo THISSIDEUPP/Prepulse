@@ -122,8 +122,8 @@ export default function Admin() {
         setMessage('Market data fetched successfully!')
         
         const fetchedMarketData = result.results
-          .filter((r: { success: boolean; data?: unknown }) => r.success)
-          .map((r: { success: boolean; data: unknown }) => r.data)
+          .filter((r: { success: boolean; data?: unknown[] }) => r.success)
+          .flatMap((r: { success: boolean; data: unknown[] }) => r.data)
         
         console.log('Fetched market data:', fetchedMarketData)
         setMarketData(fetchedMarketData)

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabase } from '@/supabase/client'
 
 interface YahooQuote {
+  date: string
   regularMarketOpen: number
   regularMarketDayHigh: number
   regularMarketDayLow: number
@@ -70,10 +71,13 @@ function calculateMACD(prices: number[]): { macd: number; signal: number; histog
   }
 }
 
-async function fetchYahooFinanceData(symbol: string): Promise<YahooQuote | null> {
+async function fetchYahooFinanceData(symbol: string, days: number = 30): Promise<YahooQuote[]> {
   try {
+    const endDate = Math.floor(Date.now() / 1000)
+    const startDate = endDate - (days * 24 * 60 * 60)
+    
     const response = await fetch(
-      `https://query2.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`,
+      `https://query2.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${startDate}&period2=${endDate}&interval=1d`,
       {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -90,29 +94,41 @@ async function fetchYahooFinanceData(symbol: string): Promise<YahooQuote | null>
     }
 
     const data = await response.json()
+    console.log(`Yahoo Finance response for ${symbol}:`, JSON.stringify(data, null, 2))
     
     if (!data.chart?.result?.[0]) {
       throw new Error('No data returned from Yahoo Finance')
     }
 
     const result = data.chart.result[0]
-    const meta = result.meta
+    const timestamps = result.timestamp || []
     const quote = result.indicators?.quote?.[0]
     
-    if (!meta || !quote) {
+    if (!quote || !timestamps.length) {
       throw new Error('Invalid data structure from Yahoo Finance')
     }
 
-    return {
-      regularMarketOpen: quote.open?.[0] || meta.previousClose,
-      regularMarketDayHigh: quote.high?.[0] || meta.previousClose,
-      regularMarketDayLow: quote.low?.[0] || meta.previousClose,
-      regularMarketPrice: meta.regularMarketPrice || meta.previousClose,
-      regularMarketVolume: quote.volume?.[0] || 0
+    const historicalData: YahooQuote[] = []
+    
+    for (let i = 0; i < timestamps.length; i++) {
+      if (quote.open?.[i] != null && quote.high?.[i] != null && quote.low?.[i] != null && quote.close?.[i] != null) {
+        const date = new Date(timestamps[i] * 1000).toISOString().split('T')[0]
+        historicalData.push({
+          date,
+          regularMarketOpen: quote.open[i],
+          regularMarketDayHigh: quote.high[i],
+          regularMarketDayLow: quote.low[i],
+          regularMarketPrice: quote.close[i],
+          regularMarketVolume: quote.volume?.[i] || 0
+        })
+      }
     }
+
+    console.log(`Processed ${historicalData.length} historical records for ${symbol}`)
+    return historicalData.reverse() // Most recent first
   } catch (error) {
     console.error(`Error fetching data for ${symbol}:`, error)
-    return null
+    return []
   }
 }
 
@@ -135,45 +151,50 @@ async function getHistoricalPrices(symbol: string, days: number = 30): Promise<n
 export async function POST() {
   try {
     const symbols = ['SPY', 'IWM']
-    const today = new Date().toISOString().split('T')[0]
     const results = []
 
     for (const symbol of symbols) {
-      const quote = await fetchYahooFinanceData(symbol)
+      const historicalQuotes = await fetchYahooFinanceData(symbol, 30)
       
-      if (!quote) {
+      if (historicalQuotes.length === 0) {
         results.push({ symbol, success: false, error: 'Failed to fetch data' })
         continue
       }
 
-      const historicalPrices = await getHistoricalPrices(symbol, 30)
-      const allPrices = [...historicalPrices, quote.regularMarketPrice]
+      const marketDataBatch = []
+      
+      for (const quote of historicalQuotes) {
+        const existingPrices = await getHistoricalPrices(symbol, 30)
+        const allPrices = [...existingPrices, quote.regularMarketPrice]
 
-      const rsi = calculateRSI(allPrices)
-      const macd = calculateMACD(allPrices)
+        const rsi = calculateRSI(allPrices)
+        const macd = calculateMACD(allPrices)
 
-      const marketData = {
-        date: today,
-        symbol,
-        open_price: quote.regularMarketOpen,
-        high_price: quote.regularMarketDayHigh,
-        low_price: quote.regularMarketDayLow,
-        close_price: quote.regularMarketPrice,
-        volume: quote.regularMarketVolume,
-        rsi_14: rsi,
-        macd_line: macd?.macd || null,
-        macd_signal: macd?.signal || null,
-        macd_histogram: macd?.histogram || null
+        const marketData = {
+          date: quote.date,
+          symbol,
+          open_price: quote.regularMarketOpen,
+          high_price: quote.regularMarketDayHigh,
+          low_price: quote.regularMarketDayLow,
+          close_price: quote.regularMarketPrice,
+          volume: quote.regularMarketVolume,
+          rsi_14: rsi,
+          macd_line: macd?.macd || null,
+          macd_signal: macd?.signal || null,
+          macd_histogram: macd?.histogram || null
+        }
+
+        marketDataBatch.push(marketData)
       }
 
       const { error } = await supabase
         .from('market_data')
-        .upsert(marketData)
+        .upsert(marketDataBatch)
 
       if (error) {
         results.push({ symbol, success: false, error: error.message })
       } else {
-        results.push({ symbol, success: true, data: marketData })
+        results.push({ symbol, success: true, data: marketDataBatch })
       }
     }
 
