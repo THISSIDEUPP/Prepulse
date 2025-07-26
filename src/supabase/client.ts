@@ -120,50 +120,33 @@ const mockAuth = {
 }
 
 const createMockSupabaseClient = () => {
-  const serverStorage: Record<string, string> = {}
-  
-  const mockStorage = {
-    getItem: (key: string) => {
-      if (typeof window === 'undefined') {
-        return serverStorage[key] || null
-      }
-      return localStorage.getItem(key)
-    },
-    setItem: (key: string, value: string) => {
-      if (typeof window === 'undefined') {
-        serverStorage[key] = value
-        if (typeof global !== 'undefined') {
-          global.mockServerData = global.mockServerData || {}
-          global.mockServerData[key] = value
-        }
-        return
-      }
-      localStorage.setItem(key, value)
-    }
+  if (typeof global !== 'undefined') {
+    global.mockServerData = global.mockServerData || {}
   }
 
-  const syncServerDataToClient = (tableName: string) => {
-    if (typeof window !== 'undefined' && typeof global !== 'undefined' && global.mockServerData) {
-      const serverData = global.mockServerData[`mock_${tableName}`]
-      if (serverData) {
-        const clientData = localStorage.getItem(`mock_${tableName}`)
-        const clientRecords = clientData ? JSON.parse(clientData) : []
-        const serverRecords = JSON.parse(serverData)
-        
-        const mergedRecords = [...clientRecords, ...serverRecords.filter((item: Record<string, unknown>) => 
-          !clientRecords.some((clientItem: Record<string, unknown>) => 
-            (item.date && item.symbol && clientItem.date === item.date && clientItem.symbol === item.symbol) ||
-            (item.date && !item.symbol && clientItem.date === item.date && !clientItem.symbol) ||
-            (item.id && clientItem.id === item.id)
-          )
-        )]
-        
-        localStorage.setItem(`mock_${tableName}`, JSON.stringify(mergedRecords))
-        return mergedRecords
+  const getStorage = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage
+    } else {
+      return {
+        getItem: (key: string) => {
+          if (typeof global !== 'undefined' && global.mockServerData) {
+            return global.mockServerData[key] || null
+          }
+          return null
+        },
+        setItem: (key: string, value: string) => {
+          if (typeof global !== 'undefined') {
+            global.mockServerData = global.mockServerData || {}
+            global.mockServerData[key] = value
+            
+          }
+        }
       }
     }
-    return null
   }
+  
+  const mockStorage = getStorage()
 
   const createChainableQuery = (tableName: string, filters: Record<string, unknown> = {}) => {
     const query = {
@@ -178,8 +161,6 @@ const createMockSupabaseClient = () => {
       order: () => createChainableQuery(tableName, filters),
       limit: () => createChainableQuery(tableName, filters),
       single: () => {
-        syncServerDataToClient(tableName)
-        
         const data = mockStorage.getItem(`mock_${tableName}`)
         const records = data ? JSON.parse(data) : []
         
@@ -195,8 +176,6 @@ const createMockSupabaseClient = () => {
         return Promise.resolve({ data: filtered[0] || null, error: null })
       },
       then: (resolve: (value: { data: Record<string, unknown>[], error: null }) => void) => {
-        syncServerDataToClient(tableName)
-        
         const data = mockStorage.getItem(`mock_${tableName}`)
         const records = data ? JSON.parse(data) : []
         
@@ -253,7 +232,10 @@ const createMockSupabaseClient = () => {
           }
         })
         
-        mockStorage.setItem(`mock_${tableName}`, JSON.stringify(records))
+        const updatedData = JSON.stringify(records)
+        mockStorage.setItem(`mock_${tableName}`, updatedData)
+        
+        
         return Promise.resolve({ data: newRecord, error: null })
       }
     })

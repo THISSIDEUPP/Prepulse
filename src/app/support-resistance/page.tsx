@@ -44,52 +44,52 @@ export default function SupportResistance() {
   }
 
   const loadSupportResistanceData = async () => {
-    const today = new Date().toISOString().split('T')[0]
-    console.log('Loading S/R data for:', selectedETF, 'on date:', today)
-    
-    const { data: srData, error: srError } = await supabase
-      .from('support_resistance_data')
-      .select('*')
-      .eq('date', today)
-      .eq('symbol', selectedETF)
-
-    console.log('S/R data result:', srData, 'error:', srError)
-
-    const { data: marketData, error: marketError } = await supabase
-      .from('market_data')
-      .select('*')
-      .eq('date', today)
-      .eq('symbol', selectedETF)
-
-    console.log('Market data result:', marketData, 'error:', marketError)
-
-    if (srData && srData.length > 0 && marketData && marketData.length > 0) {
-      const selectedSR = srData[0]
-      const selectedMarket = marketData[0]
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      console.log('Loading S/R data for:', selectedETF, 'on date:', today)
       
-      console.log('Found data, calculating timing signals')
-      const timingSignals = calculateTimingSignals(selectedMarket, selectedSR)
+      const srResponse = await fetch(`/api/get-support-resistance?symbol=${selectedETF}&date=${today}`)
+      const srResult = await srResponse.json()
       
-      setMultiTimeframeData({
-        daily_rsi: selectedMarket.rsi_14 || 50,
-        daily_macd: selectedMarket.macd_line || 0,
-        current_price: selectedMarket.close_price,
-        support_resistance: selectedSR,
-        timing_signals: timingSignals
-      })
-    } else {
-      console.log('No data found, setting multiTimeframeData to null')
+      const marketResponse = await fetch(`/api/get-market-data?symbol=${selectedETF}&limit=20`)
+      const marketResult = await marketResponse.json()
+      
+      console.log('S/R API result:', srResult)
+      console.log('Market API result:', marketResult)
+
+      if (srResult.success && srResult.data && marketResult.success && marketResult.data && marketResult.data.length > 0) {
+        const srData = srResult.data
+        const marketData = marketResult.data
+        const latestMarketData = marketData[0]
+        
+        console.log('Found data, calculating timing signals')
+        const timingSignals = calculateTimingSignals(latestMarketData, srData)
+        
+        setMultiTimeframeData({
+          daily_rsi: latestMarketData.rsi_14 || 50,
+          daily_macd: latestMarketData.macd_line || 0,
+          current_price: latestMarketData.close_price,
+          support_resistance: srData,
+          timing_signals: timingSignals
+        })
+      } else {
+        console.log('No data found, setting multiTimeframeData to null')
+        setMultiTimeframeData(null)
+      }
+
+      const { data: lunarDataResult } = await supabase
+        .from('lunar_data')
+        .select('*')
+        .eq('date', today)
+        .single()
+
+      if (lunarDataResult) {
+        setLunarData(lunarDataResult)
+      }
+    } catch (error) {
+      console.error('Error loading S/R data:', error)
       setMultiTimeframeData(null)
-    }
-
-    const { data: lunarDataResult } = await supabase
-      .from('lunar_data')
-      .select('*')
-      .eq('date', today)
-      .single()
-
-    if (lunarDataResult) {
-      setLunarData(lunarDataResult)
+      setLunarData(null)
     }
   }
 
@@ -144,11 +144,12 @@ export default function SupportResistance() {
       if (!response.ok) throw new Error('Failed to calculate support/resistance')
       const result = await response.json()
       
-      if (result.success) {
+      if (result.success && result.results.some((r: { success: boolean }) => r.success)) {
         setMessage('Support/Resistance levels calculated successfully!')
         setTimeout(() => loadSupportResistanceData(), 500)
       } else {
-        setMessage(`Error: ${result.error}`)
+        const errors = result.results.filter((r: { success: boolean; error?: string }) => !r.success).map((r: { error?: string }) => r.error)
+        setMessage(`Error: ${errors.join(', ') || 'No data available for calculations'}`)
       }
     } catch (error) {
       setMessage(`Error calculating levels: ${error instanceof Error ? error.message : 'Unknown error'}`)
