@@ -20,6 +20,7 @@ export interface MarketData {
   low_price: number
   close_price: number
   volume: number
+  change_percent?: number
   rsi_14?: number
   macd_line?: number
   macd_signal?: number
@@ -86,6 +87,8 @@ export interface TimingSignals {
   near_support: boolean
   near_resistance: boolean
   entry_signal: 'BUY' | 'SELL' | 'HOLD'
+  exit_signal?: 'BUY' | 'SELL' | 'HOLD'
+  risk_level?: 'LOW' | 'MEDIUM' | 'HIGH'
 }
 
 export interface MultiTimeframeData {
