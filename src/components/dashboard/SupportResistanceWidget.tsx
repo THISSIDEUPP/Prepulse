@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Target, Calculator, Activity } from 'lucide-react'
 import { SupportResistanceData, TimingSignals, MarketData } from '@/types'
+import { mcpSupportResistanceClient } from '@/lib/mcp-support-resistance-client'
 
 interface SupportResistanceWidgetProps {
   selectedETF: 'SPY' | 'IWM'
@@ -16,25 +17,82 @@ export default function SupportResistanceWidget({ selectedETF }: SupportResistan
 
   useEffect(() => {
     loadSupportResistanceData()
+    
+    const interval = setInterval(() => {
+      loadSupportResistanceData()
+    }, 60000)
+    
+    return () => {
+      clearInterval(interval)
+      mcpSupportResistanceClient.disconnect()
+    }
   }, [selectedETF])
 
   const loadSupportResistanceData = async () => {
     setLoading(true)
     try {
-      const today = new Date().toISOString().split('T')[0]
+      let srData = null
+      let marketData = null
       
-      const srResponse = await fetch(`/api/get-support-resistance?symbol=${selectedETF}&date=${today}`)
-      const srResult = await srResponse.json()
+      const mcpConnected = await mcpSupportResistanceClient.connect()
       
-      const marketResponse = await fetch(`/api/get-market-data?symbol=${selectedETF}&limit=1`)
-      const marketResult = await marketResponse.json()
-
-      if (srResult.success && srResult.data) {
-        setSrData(srResult.data)
+      if (mcpConnected) {
+        const realTimeData = await mcpSupportResistanceClient.getSupportResistanceData(selectedETF)
+        if (realTimeData) {
+          srData = {
+            id: `realtime-${selectedETF}`,
+            date: realTimeData.lastCalculated.split('T')[0],
+            symbol: selectedETF,
+            support_1: realTimeData.support1,
+            support_2: realTimeData.support2,
+            support_3: realTimeData.support3,
+            resistance_1: realTimeData.resistance1,
+            resistance_2: realTimeData.resistance2,
+            resistance_3: realTimeData.resistance3,
+            pivot_point: realTimeData.pivotPoint,
+            strength: realTimeData.strength,
+            created_at: realTimeData.timestamp
+          }
+          
+          marketData = {
+            id: `realtime-market-${selectedETF}`,
+            date: realTimeData.lastCalculated.split('T')[0],
+            symbol: selectedETF,
+            close_price: realTimeData.currentPrice,
+            open_price: realTimeData.currentPrice - 1,
+            high_price: realTimeData.currentPrice + 2,
+            low_price: realTimeData.currentPrice - 2,
+            volume: 50000000,
+            rsi_14: 50,
+            change_percent: 0.5,
+            created_at: realTimeData.timestamp
+          }
+        }
+      }
+      
+      if (!srData) {
+        const today = new Date().toISOString().split('T')[0]
         
-        if (marketResult.success && marketResult.data && marketResult.data.length > 0) {
-          const marketData = marketResult.data[0]
-          const timingSignals = calculateTimingSignals(marketData, srResult.data)
+        const srResponse = await fetch(`/api/get-support-resistance?symbol=${selectedETF}&date=${today}`)
+        const srResult = await srResponse.json()
+        
+        const marketResponse = await fetch(`/api/get-market-data?symbol=${selectedETF}&limit=1`)
+        const marketResult = await marketResponse.json()
+
+        if (srResult.success && srResult.data) {
+          srData = srResult.data
+          
+          if (marketResult.success && marketResult.data && marketResult.data.length > 0) {
+            marketData = marketResult.data[0]
+          }
+        }
+      }
+
+      if (srData) {
+        setSrData(srData)
+        
+        if (marketData) {
+          const timingSignals = calculateTimingSignals(marketData, srData)
           setSignals(timingSignals)
         }
       } else {

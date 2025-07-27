@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { AlertTriangle, TrendingUp, TrendingDown, Download } from 'lucide-react'
 import { ShortInterestData, ShortInterestSignals } from '@/types'
 import { supabase } from '@/supabase/client'
+import { mcpShortInterestClient } from '@/lib/mcp-short-interest-client'
 
 interface ShortInterestWidgetProps {
   selectedETF: 'SPY' | 'IWM'
@@ -16,21 +17,55 @@ export default function ShortInterestWidget({ selectedETF }: ShortInterestWidget
 
   useEffect(() => {
     loadShortInterestData()
+    
+    const interval = setInterval(() => {
+      loadShortInterestData()
+    }, 45000)
+    
+    return () => {
+      clearInterval(interval)
+      mcpShortInterestClient.disconnect()
+    }
   }, [selectedETF])
 
   const loadShortInterestData = async () => {
     setLoading(true)
-    const today = new Date().toISOString().split('T')[0]
     
     try {
-      const { data } = await supabase
-        .from('short_interest_data')
-        .select('*')
-        .eq('date', today)
-        .eq('symbol', selectedETF)
-        .single()
+      let shortInterestData = null
+      
+      const mcpConnected = await mcpShortInterestClient.connect()
+      
+      if (mcpConnected) {
+        const realTimeData = await mcpShortInterestClient.getShortInterestData(selectedETF)
+        if (realTimeData) {
+          shortInterestData = {
+            id: `realtime-${selectedETF}`,
+            date: realTimeData.lastUpdated,
+            symbol: selectedETF,
+            short_interest_ratio: realTimeData.shortRatio,
+            short_interest_percent_float: realTimeData.shortPercentFloat,
+            total_shares_shorted: realTimeData.shortInterest,
+            shares_outstanding: realTimeData.sharesOutstanding,
+            days_to_cover: realTimeData.daysTocover,
+            created_at: realTimeData.timestamp
+          }
+        }
+      }
+      
+      if (!shortInterestData) {
+        const today = new Date().toISOString().split('T')[0]
+        const { data } = await supabase
+          .from('short_interest_data')
+          .select('*')
+          .eq('date', today)
+          .eq('symbol', selectedETF)
+          .single()
+        
+        shortInterestData = data
+      }
 
-      setShortData(data)
+      setShortData(shortInterestData)
     } catch {
       setShortData(null)
     }
