@@ -13,6 +13,7 @@ interface MockUser {
   id: string
   email: string
   created_at: string
+  role?: 'admin' | 'user'
 }
 
 interface MockAuthResponse {
@@ -23,6 +24,11 @@ interface MockAuthResponse {
   error: { message: string } | null
 }
 
+const ADMIN_EMAILS = [
+  'cmarbury88@gmail.com', // User's email
+  'devin@cognition.ai'    // Devin's email
+]
+
 const mockAuth = {
   signUp: async ({ email, password }: { email: string; password: string }): Promise<MockAuthResponse> => {
     if (!email || !password) {
@@ -32,10 +38,12 @@ const mockAuth = {
       }
     }
 
+    const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
     const mockUser: MockUser = {
       id: `mock-user-${Date.now()}`,
       email,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      role: isAdmin ? 'admin' : 'user'
     }
 
     localStorage.setItem('mock-auth-user', JSON.stringify(mockUser))
@@ -59,18 +67,23 @@ const mockAuth = {
     if (storedUser) {
       const user = JSON.parse(storedUser)
       if (user.email === email) {
-        localStorage.setItem('mock-auth-session', JSON.stringify({ user, expires_at: Date.now() + 86400000 }))
+        const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
+        const updatedUser = { ...user, role: user.role || (isAdmin ? 'admin' : 'user') }
+        localStorage.setItem('mock-auth-user', JSON.stringify(updatedUser))
+        localStorage.setItem('mock-auth-session', JSON.stringify({ user: updatedUser, expires_at: Date.now() + 86400000 }))
         return {
-          data: { user, session: { user } },
+          data: { user: updatedUser, session: { user: updatedUser } },
           error: null
         }
       }
     }
 
+    const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
     const mockUser: MockUser = {
       id: `mock-user-${Date.now()}`,
       email,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      role: isAdmin ? 'admin' : 'user'
     }
 
     localStorage.setItem('mock-auth-user', JSON.stringify(mockUser))
@@ -95,7 +108,8 @@ const mockAuth = {
           user: { 
             id: 'mock-server-user', 
             email: 'server@example.com', 
-            created_at: new Date().toISOString() 
+            created_at: new Date().toISOString(),
+            role: 'admin'
           } 
         },
         error: null

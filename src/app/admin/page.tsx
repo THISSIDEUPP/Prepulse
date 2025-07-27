@@ -10,6 +10,7 @@ import { MarketData } from '@/types'
 interface AuthUser {
   id: string
   email?: string
+  role?: 'admin' | 'user'
 }
 
 export default function Admin() {
@@ -39,7 +40,15 @@ export default function Admin() {
       router.push('/auth')
       return
     }
-    setUser(user)
+    
+    if (user.role !== 'admin') {
+      setMessage('Access denied. Admin privileges required.')
+      setLoading(false)
+      setTimeout(() => router.push('/'), 3000)
+      return
+    }
+    
+    setUser(user as AuthUser)
     setLoading(false)
     
     loadTodaysPulse()
