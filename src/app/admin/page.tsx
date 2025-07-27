@@ -36,6 +36,7 @@ export default function Admin() {
 
   const checkUser = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
+    
     if (!user) {
       router.push('/auth')
       return
@@ -55,7 +56,11 @@ export default function Admin() {
   }, [router])
 
   useEffect(() => {
-    checkUser()
+    const timer = setTimeout(() => {
+      checkUser()
+    }, 100)
+    
+    return () => clearTimeout(timer)
   }, [checkUser])
 
   const loadTodaysPulse = async () => {

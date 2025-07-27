@@ -63,14 +63,17 @@ const mockAuth = {
       }
     }
 
+    const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase().trim())
+
     const storedUser = localStorage.getItem('mock-auth-user')
     if (storedUser) {
       const user = JSON.parse(storedUser)
       if (user.email === email) {
-        const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
-        const updatedUser = { ...user, role: user.role || (isAdmin ? 'admin' : 'user') }
+        const updatedUser = { ...user, role: isAdmin ? 'admin' : 'user' }
+        
         localStorage.setItem('mock-auth-user', JSON.stringify(updatedUser))
         localStorage.setItem('mock-auth-session', JSON.stringify({ user: updatedUser, expires_at: Date.now() + 86400000 }))
+        
         return {
           data: { user: updatedUser, session: { user: updatedUser } },
           error: null
@@ -78,7 +81,6 @@ const mockAuth = {
       }
     }
 
-    const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase())
     const mockUser: MockUser = {
       id: `mock-user-${Date.now()}`,
       email,
@@ -86,6 +88,7 @@ const mockAuth = {
       role: isAdmin ? 'admin' : 'user'
     }
 
+    
     localStorage.setItem('mock-auth-user', JSON.stringify(mockUser))
     localStorage.setItem('mock-auth-session', JSON.stringify({ user: mockUser, expires_at: Date.now() + 86400000 }))
 
@@ -120,8 +123,18 @@ const mockAuth = {
     if (session) {
       const parsedSession = JSON.parse(session)
       if (parsedSession.expires_at > Date.now()) {
+        const user = parsedSession.user
+        
+        if (user && user.email && !user.role) {
+          const isAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase().trim())
+          user.role = isAdmin ? 'admin' : 'user'
+          
+          const updatedSession = { ...parsedSession, user }
+          localStorage.setItem('mock-auth-session', JSON.stringify(updatedSession))
+          localStorage.setItem('mock-auth-user', JSON.stringify(user))
+        }
         return {
-          data: { user: parsedSession.user },
+          data: { user },
           error: null
         }
       }
