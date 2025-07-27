@@ -127,9 +127,7 @@ export default function Admin() {
           .flatMap((r: { success: boolean; data: unknown[] }) => r.data)
           .filter((data: { date: string }) => data.date === formData.date)
         
-        console.log('Fetched market data:', fetchedMarketData)
         setMarketData(fetchedMarketData)
-        console.log('Market data state should be updated')
       } else {
         setMessage(`Error: ${result.error}`)
       }

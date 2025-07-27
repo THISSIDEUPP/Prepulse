@@ -72,8 +72,7 @@ async function getHistoricalOHLCV(symbol: string, days: number = 20): Promise<Hi
       .limit(days)
 
     return data || []
-  } catch (error) {
-    console.error(`Error fetching historical OHLCV for ${symbol}:`, error)
+  } catch {
     return []
   }
 }
@@ -123,8 +122,7 @@ export async function POST() {
       results,
       message: results.every(r => !r.success) ? 'No data available for calculations' : 'Calculations completed'
     })
-  } catch (error) {
-    console.error('Error in calculate-support-resistance:', error)
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

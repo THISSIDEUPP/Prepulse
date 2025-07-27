@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/supabase/client'
 import { useRouter } from 'next/navigation'
 import { TrendingUp, TrendingDown, ArrowLeft, Calculator, Target, AlertCircle, Activity, Moon } from 'lucide-react'
@@ -33,7 +33,7 @@ export default function SupportResistance() {
     }
   }, [selectedETF, user])
 
-  const checkUser = async () => {
+  const checkUser = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       router.push('/auth')
@@ -41,28 +41,23 @@ export default function SupportResistance() {
     }
     setUser(user)
     setLoading(false)
-  }
+  }, [router])
 
-  const loadSupportResistanceData = async () => {
+  const loadSupportResistanceData = useCallback(async () => {
     try {
       const today = new Date().toISOString().split('T')[0]
-      console.log('Loading S/R data for:', selectedETF, 'on date:', today)
       
       const srResponse = await fetch(`/api/get-support-resistance?symbol=${selectedETF}&date=${today}`)
       const srResult = await srResponse.json()
       
       const marketResponse = await fetch(`/api/get-market-data?symbol=${selectedETF}&limit=20`)
       const marketResult = await marketResponse.json()
-      
-      console.log('S/R API result:', srResult)
-      console.log('Market API result:', marketResult)
 
       if (srResult.success && srResult.data && marketResult.success && marketResult.data && marketResult.data.length > 0) {
         const srData = srResult.data
         const marketData = marketResult.data
         const latestMarketData = marketData[0]
         
-        console.log('Found data, calculating timing signals')
         const timingSignals = calculateTimingSignals(latestMarketData, srData)
         
         setMultiTimeframeData({
@@ -73,7 +68,6 @@ export default function SupportResistance() {
           timing_signals: timingSignals
         })
       } else {
-        console.log('No data found, setting multiTimeframeData to null')
         setMultiTimeframeData(null)
       }
 
@@ -86,12 +80,11 @@ export default function SupportResistance() {
       if (lunarDataResult) {
         setLunarData(lunarDataResult)
       }
-    } catch (error) {
-      console.error('Error loading S/R data:', error)
+    } catch {
       setMultiTimeframeData(null)
       setLunarData(null)
     }
-  }
+  }, [selectedETF])
 
   const calculateTimingSignals = (marketData: MarketData, srData: SupportResistanceData): TimingSignals => {
     const currentPrice = marketData.close_price

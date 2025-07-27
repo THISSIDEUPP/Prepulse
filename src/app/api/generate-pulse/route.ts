@@ -175,8 +175,7 @@ export async function POST(request: NextRequest) {
       pulse: pulseData,
       marketData: { spy: spyData, iwm: iwmData }
     })
-  } catch (error) {
-    console.error('Error generating pulse:', error)
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

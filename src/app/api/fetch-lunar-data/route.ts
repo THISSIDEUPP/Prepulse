@@ -97,7 +97,6 @@ export async function POST() {
       .upsert(lunarData)
 
     if (error) {
-      console.error('Error storing lunar data:', error)
       return NextResponse.json(
         { success: false, error: error.message },
         { status: 500 }
@@ -110,8 +109,7 @@ export async function POST() {
       message: 'Lunar data calculated and stored successfully'
     })
 
-  } catch (error) {
-    console.error('Error in fetch-lunar-data:', error)
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

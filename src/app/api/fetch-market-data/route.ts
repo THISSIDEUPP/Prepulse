@@ -94,7 +94,6 @@ async function fetchYahooFinanceData(symbol: string, days: number = 30): Promise
     }
 
     const data = await response.json()
-    console.log(`Yahoo Finance response for ${symbol}:`, JSON.stringify(data, null, 2))
     
     if (!data.chart?.result?.[0]) {
       throw new Error('No data returned from Yahoo Finance')
@@ -124,10 +123,8 @@ async function fetchYahooFinanceData(symbol: string, days: number = 30): Promise
       }
     }
 
-    console.log(`Processed ${historicalData.length} historical records for ${symbol}`)
     return historicalData.reverse() // Most recent first
-  } catch (error) {
-    console.error(`Error fetching data for ${symbol}:`, error)
+  } catch {
     return []
   }
 }
@@ -142,8 +139,7 @@ async function getHistoricalPrices(symbol: string, days: number = 30): Promise<n
       .limit(days)
 
     return data?.map(d => d.close_price) || []
-  } catch (error) {
-    console.error(`Error fetching historical prices for ${symbol}:`, error)
+  } catch {
     return []
   }
 }
@@ -205,8 +201,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, results })
-  } catch (error) {
-    console.error('Error in fetch-market-data:', error)
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

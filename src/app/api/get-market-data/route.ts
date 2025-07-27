@@ -32,8 +32,7 @@ export async function GET(request: Request) {
       success: true,
       data: data || []
     })
-  } catch (error) {
-    console.error('Error in get-market-data:', error)
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

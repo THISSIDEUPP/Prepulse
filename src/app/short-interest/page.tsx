@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/supabase/client'
 import { useRouter } from 'next/navigation'
 import { BarChart3, ArrowLeft, Download, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react'
@@ -26,7 +26,7 @@ export default function ShortInterest() {
      loadShortInterestData()
    }, [])
 
-  const checkUser = async () => {
+  const checkUser = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       router.push('/auth')
@@ -34,9 +34,9 @@ export default function ShortInterest() {
     }
     setUser(user)
     setLoading(false)
-  }
+  }, [router])
 
-  const loadShortInterestData = async () => {
+  const loadShortInterestData = useCallback(async () => {
     const today = new Date().toISOString().split('T')[0]
     const { data } = await supabase
       .from('short_interest_data')
@@ -47,7 +47,7 @@ export default function ShortInterest() {
     if (data) {
       setShortData(data)
     }
-  }
+  }, [])
 
   const handleFetchShortInterest = async () => {
     setFetching(true)

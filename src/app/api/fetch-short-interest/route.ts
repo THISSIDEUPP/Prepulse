@@ -54,8 +54,7 @@ export async function POST() {
     }
 
     return NextResponse.json({ success: true, results })
-  } catch (error) {
-    console.error('Error in fetch-short-interest:', error)
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
