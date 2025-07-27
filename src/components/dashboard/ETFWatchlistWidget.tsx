@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react'
 import { MarketData } from '@/types'
+import { mcpClient } from '@/lib/mcp-client'
 
 interface ETFWatchlistWidgetProps {
   selectedETF: 'SPY' | 'IWM'
@@ -18,19 +19,57 @@ export default function ETFWatchlistWidget({ selectedETF, setSelectedETF }: ETFW
 
   useEffect(() => {
     loadMarketData()
+    
+    const interval = setInterval(() => {
+      loadMarketData()
+    }, 30000)
+    
+    return () => {
+      clearInterval(interval)
+      mcpClient.disconnect()
+    }
   }, [])
 
   const loadMarketData = async () => {
     const symbols = ['SPY', 'IWM']
-    const data: any = {}
+    const data: {SPY: MarketData | null, IWM: MarketData | null} = {
+      SPY: null,
+      IWM: null
+    }
+    
+    const mcpConnected = await mcpClient.connect()
     
     for (const symbol of symbols) {
       try {
-        const response = await fetch(`/api/get-market-data?symbol=${symbol}&limit=1`)
-        const result = await response.json()
-        data[symbol] = result.success && result.data.length > 0 ? result.data[0] : null
+        let marketData = null
+        
+        if (mcpConnected) {
+          const realTimeData = await mcpClient.getRealTimeData(symbol as 'SPY' | 'IWM')
+          if (realTimeData) {
+            marketData = {
+              id: `realtime-${symbol}`,
+              date: new Date().toISOString().split('T')[0],
+              symbol: symbol as 'SPY' | 'IWM',
+              open_price: realTimeData.price - realTimeData.change,
+              high_price: realTimeData.price + Math.abs(realTimeData.change * 0.5),
+              low_price: realTimeData.price - Math.abs(realTimeData.change * 0.5),
+              close_price: realTimeData.price,
+              volume: realTimeData.volume,
+              change_percent: realTimeData.changePercent,
+              created_at: realTimeData.timestamp
+            }
+          }
+        }
+        
+        if (!marketData) {
+          const response = await fetch(`/api/get-market-data?symbol=${symbol}&limit=1`)
+          const result = await response.json()
+          marketData = result.success && result.data.length > 0 ? result.data[0] : null
+        }
+        
+        data[symbol as 'SPY' | 'IWM'] = marketData
       } catch {
-        data[symbol] = null
+        data[symbol as 'SPY' | 'IWM'] = null
       }
     }
     
