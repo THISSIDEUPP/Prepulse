@@ -192,9 +192,9 @@ export default function SupportResistance() {
 
   const getSignalColor = (signal: 'BUY' | 'SELL' | 'HOLD') => {
     switch (signal) {
-      case 'BUY': return 'bg-green-100 text-green-800'
-      case 'SELL': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'BUY': return 'border-green-400/50 text-green-300'
+      case 'SELL': return 'border-red-400/50 text-red-300'
+      default: return 'border-slate-400/50 text-slate-300'
     }
   }
 
@@ -208,32 +208,48 @@ export default function SupportResistance() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="floating-elements">
+          <div className="floating-circle"></div>
+          <div className="floating-circle"></div>
+          <div className="floating-circle"></div>
+        </div>
+        <div className="glass p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/30 mx-auto mb-4"></div>
+          <p className="text-slate-300">Loading Support & Resistance...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen">
+      <div className="floating-elements">
+        <div className="floating-circle"></div>
+        <div className="floating-circle"></div>
+        <div className="floating-circle"></div>
+      </div>
+      
+      <header className="glass mx-4 mt-4 mb-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center space-x-2">
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
-                <span className="text-sm text-gray-600">Back to Dashboard</span>
+              <Link href="/" className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors">
+                <ArrowLeft className="w-5 h-5" />
+                <span className="text-sm">Back to Dashboard</span>
               </Link>
             </div>
-            <div className="flex items-center space-x-2">
-              <Target className="w-8 h-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Support &amp; Resistance</h1>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold gradient-text">Support &amp; Resistance</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {user?.email}</span>
+              <span className="text-sm text-slate-300">Welcome, {user?.email}</span>
               <button
                 onClick={() => supabase.auth.signOut()}
-                className="text-gray-600 hover:text-gray-900 text-sm"
+                className="text-slate-300 hover:text-white text-sm transition-colors"
               >
                 Sign Out
               </button>
@@ -243,10 +259,10 @@ export default function SupportResistance() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow-sm rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Trading Levels & Timing Signals</h2>
-            <p className="text-sm text-gray-600 mt-1">
+        <div className="glass">
+          <div className="px-6 py-4 border-b border-white/20">
+            <h2 className="text-xl font-semibold gradient-text">Trading Levels & Timing Signals</h2>
+            <p className="text-sm text-slate-300 mt-1">
               Pivot points, Fibonacci retracements, and entry/exit timing for SPY and IWM
             </p>
           </div>
@@ -256,7 +272,7 @@ export default function SupportResistance() {
               <button
                 onClick={handleCalculateSR}
                 disabled={calculating}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary-glass flex items-center space-x-2 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Calculator className="w-4 h-4" />
                 <span>{calculating ? 'Calculating...' : 'Calculate S/R Levels'}</span>
@@ -265,7 +281,7 @@ export default function SupportResistance() {
               <button
                 onClick={handleFetchLunarData}
                 disabled={fetchingLunar}
-                className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-glass flex items-center space-x-2 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Moon className="w-4 h-4" />
                 <span>{fetchingLunar ? 'Fetching...' : 'Fetch Lunar Data'}</span>
@@ -276,121 +292,121 @@ export default function SupportResistance() {
                 onChange={(e) => {
                   setSelectedETF(e.target.value as 'SPY' | 'IWM')
                 }}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="glass-card px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
               >
-                <option value="SPY">SPY</option>
-                <option value="IWM">IWM</option>
+                <option value="SPY" className="bg-slate-800 text-slate-200">SPY</option>
+                <option value="IWM" className="bg-slate-800 text-slate-200">IWM</option>
               </select>
             </div>
 
             {message && (
-              <div className={`p-3 rounded-md ${message.includes('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+              <div className={`glass-card p-3 ${message.includes('Error') ? 'border-red-400/50 text-red-300' : 'border-green-400/50 text-green-300'}`}>
                 <p className="text-sm">{message}</p>
               </div>
             )}
 
             {multiTimeframeData && (
               <div className="space-y-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">Entry Signal</h3>
+                <div className="glass-card p-4">
+                  <h3 className="text-lg font-medium gradient-text mb-3">Entry Signal</h3>
                   <div className="flex items-center space-x-4">
-                    <span className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-bold ${getSignalColor(multiTimeframeData.timing_signals.entry_signal)}`}>
+                    <span className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-bold glass-card ${getSignalColor(multiTimeframeData.timing_signals.entry_signal)}`}>
                       {getSignalIcon(multiTimeframeData.timing_signals.entry_signal)}
                       <span className="ml-2">{multiTimeframeData.timing_signals.entry_signal}</span>
                     </span>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-slate-300">
                       Current Price: ${multiTimeframeData.current_price.toFixed(2)}
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                    <h3 className="text-lg font-medium text-red-800 mb-3">Resistance Levels</h3>
+                  <div className="glass-card p-4 border-red-400/50">
+                    <h3 className="text-lg font-medium text-red-300 mb-3">Resistance Levels</h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-red-700">R3:</span>
-                        <span className="font-mono text-red-900">${multiTimeframeData.support_resistance.resistance_3.toFixed(2)}</span>
+                        <span className="text-sm text-red-400">R3:</span>
+                        <span className="font-mono text-red-200">${multiTimeframeData.support_resistance.resistance_3.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-red-700">R2:</span>
-                        <span className="font-mono text-red-900">${multiTimeframeData.support_resistance.resistance_2.toFixed(2)}</span>
+                        <span className="text-sm text-red-400">R2:</span>
+                        <span className="font-mono text-red-200">${multiTimeframeData.support_resistance.resistance_2.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-red-700">R1:</span>
-                        <span className="font-mono text-red-900">${multiTimeframeData.support_resistance.resistance_1.toFixed(2)}</span>
+                        <span className="text-sm text-red-400">R1:</span>
+                        <span className="font-mono text-red-200">${multiTimeframeData.support_resistance.resistance_1.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <h3 className="text-lg font-medium text-green-800 mb-3">Support Levels</h3>
+                  <div className="glass-card p-4 border-green-400/50">
+                    <h3 className="text-lg font-medium text-green-300 mb-3">Support Levels</h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-green-700">S1:</span>
-                        <span className="font-mono text-green-900">${multiTimeframeData.support_resistance.support_1.toFixed(2)}</span>
+                        <span className="text-sm text-green-400">S1:</span>
+                        <span className="font-mono text-green-200">${multiTimeframeData.support_resistance.support_1.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-green-700">S2:</span>
-                        <span className="font-mono text-green-900">${multiTimeframeData.support_resistance.support_2.toFixed(2)}</span>
+                        <span className="text-sm text-green-400">S2:</span>
+                        <span className="font-mono text-green-200">${multiTimeframeData.support_resistance.support_2.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-green-700">S3:</span>
-                        <span className="font-mono text-green-900">${multiTimeframeData.support_resistance.support_3.toFixed(2)}</span>
+                        <span className="text-sm text-green-400">S3:</span>
+                        <span className="font-mono text-green-200">${multiTimeframeData.support_resistance.support_3.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-blue-700 mb-2">Pivot Point</h3>
-                    <p className="text-xl font-bold text-blue-900">${multiTimeframeData.support_resistance.pivot_point.toFixed(2)}</p>
+                  <div className="glass-card p-4">
+                    <h3 className="text-sm font-medium text-slate-300 mb-2">Pivot Point</h3>
+                    <p className="text-xl font-bold vibrant-text">${multiTimeframeData.support_resistance.pivot_point.toFixed(2)}</p>
                   </div>
 
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-purple-700 mb-2">Fibonacci 61.8%</h3>
-                    <p className="text-xl font-bold text-purple-900">${multiTimeframeData.support_resistance.fibonacci_618.toFixed(2)}</p>
+                  <div className="glass-card p-4">
+                    <h3 className="text-sm font-medium text-slate-300 mb-2">Fibonacci 61.8%</h3>
+                    <p className="text-xl font-bold vibrant-text">${multiTimeframeData.support_resistance.fibonacci_618.toFixed(2)}</p>
                   </div>
 
-                  <div className="bg-yellow-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-yellow-700 mb-2">Volume POC</h3>
-                    <p className="text-xl font-bold text-yellow-900">${multiTimeframeData.support_resistance.volume_profile_poc.toFixed(2)}</p>
+                  <div className="glass-card p-4">
+                    <h3 className="text-sm font-medium text-slate-300 mb-2">Volume POC</h3>
+                    <p className="text-xl font-bold vibrant-text">${multiTimeframeData.support_resistance.volume_profile_poc.toFixed(2)}</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">Multi-Timeframe Analysis</h3>
+                  <h3 className="text-lg font-medium gradient-text">Multi-Timeframe Analysis</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="text-lg font-medium text-gray-900 mb-3">RSI Alignment</h4>
+                    <div className="glass-card p-4">
+                      <h4 className="text-lg font-medium gradient-text mb-3">RSI Alignment</h4>
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Daily:</span>
-                          <span className="font-bold text-gray-900">{multiTimeframeData.daily_rsi.toFixed(1)}</span>
+                          <span className="text-sm text-slate-400">Daily:</span>
+                          <span className="font-bold text-slate-200">{multiTimeframeData.daily_rsi.toFixed(1)}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">1H:</span>
-                          <span className="font-bold text-gray-900">{(multiTimeframeData.daily_rsi + Math.random() * 10 - 5).toFixed(1)}</span>
+                          <span className="text-sm text-slate-400">1H:</span>
+                          <span className="font-bold text-slate-200">{(multiTimeframeData.daily_rsi + Math.random() * 10 - 5).toFixed(1)}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">15M:</span>
-                          <span className="font-bold text-gray-900">{(multiTimeframeData.daily_rsi + Math.random() * 15 - 7.5).toFixed(1)}</span>
+                          <span className="text-sm text-slate-400">15M:</span>
+                          <span className="font-bold text-slate-200">{(multiTimeframeData.daily_rsi + Math.random() * 15 - 7.5).toFixed(1)}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">5M:</span>
-                          <span className="font-bold text-gray-900">{(multiTimeframeData.daily_rsi + Math.random() * 20 - 10).toFixed(1)}</span>
+                          <span className="text-sm text-slate-400">5M:</span>
+                          <span className="font-bold text-slate-200">{(multiTimeframeData.daily_rsi + Math.random() * 20 - 10).toFixed(1)}</span>
                         </div>
                       </div>
                       <div className="mt-3 flex space-x-2">
                         {multiTimeframeData.timing_signals.rsi_oversold && (
-                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium glass-card border-green-400/50 text-green-300">
                             <AlertCircle className="w-3 h-3 mr-1" />
                             Oversold
                           </span>
                         )}
                         {multiTimeframeData.timing_signals.rsi_overbought && (
-                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium glass-card border-red-400/50 text-red-300">
                             <AlertCircle className="w-3 h-3 mr-1" />
                             Overbought
                           </span>
@@ -398,35 +414,35 @@ export default function SupportResistance() {
                       </div>
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="text-lg font-medium text-gray-900 mb-3">MACD Alignment</h4>
+                    <div className="glass-card p-4">
+                      <h4 className="text-lg font-medium gradient-text mb-3">MACD Alignment</h4>
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Daily:</span>
-                          <span className="font-bold text-gray-900">{multiTimeframeData.daily_macd.toFixed(3)}</span>
+                          <span className="text-sm text-slate-400">Daily:</span>
+                          <span className="font-bold text-slate-200">{multiTimeframeData.daily_macd.toFixed(3)}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">1H:</span>
-                          <span className="font-bold text-gray-900">{(multiTimeframeData.daily_macd + Math.random() * 0.02 - 0.01).toFixed(3)}</span>
+                          <span className="text-sm text-slate-400">1H:</span>
+                          <span className="font-bold text-slate-200">{(multiTimeframeData.daily_macd + Math.random() * 0.02 - 0.01).toFixed(3)}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">15M:</span>
-                          <span className="font-bold text-gray-900">{(multiTimeframeData.daily_macd + Math.random() * 0.04 - 0.02).toFixed(3)}</span>
+                          <span className="text-sm text-slate-400">15M:</span>
+                          <span className="font-bold text-slate-200">{(multiTimeframeData.daily_macd + Math.random() * 0.04 - 0.02).toFixed(3)}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">5M:</span>
-                          <span className="font-bold text-gray-900">{(multiTimeframeData.daily_macd + Math.random() * 0.06 - 0.03).toFixed(3)}</span>
+                          <span className="text-sm text-slate-400">5M:</span>
+                          <span className="font-bold text-slate-200">{(multiTimeframeData.daily_macd + Math.random() * 0.06 - 0.03).toFixed(3)}</span>
                         </div>
                       </div>
                       <div className="mt-3 flex space-x-2">
                         {multiTimeframeData.timing_signals.macd_bullish_cross && (
-                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium glass-card border-green-400/50 text-green-300">
                             <TrendingUp className="w-3 h-3 mr-1" />
                             Bullish Cross
                           </span>
                         )}
                         {multiTimeframeData.timing_signals.macd_bearish_cross && (
-                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium glass-card border-red-400/50 text-red-300">
                             <TrendingDown className="w-3 h-3 mr-1" />
                             Bearish Cross
                           </span>
@@ -438,38 +454,38 @@ export default function SupportResistance() {
 
                 {lunarData && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-gray-900">Lunar Cycle Analysis</h3>
+                    <h3 className="text-lg font-medium gradient-text">Lunar Cycle Analysis</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-indigo-50 p-4 rounded-lg">
-                        <h4 className="text-sm font-medium text-indigo-700 mb-2">Moon Phase</h4>
-                        <p className="text-xl font-bold text-indigo-900">{lunarData.moon_phase.replace('_', ' ')}</p>
-                        <p className="text-sm text-indigo-600">{lunarData.moon_phase_percent}% Illuminated</p>
+                      <div className="glass-card p-4 border-indigo-400/50">
+                        <h4 className="text-sm font-medium text-indigo-300 mb-2">Moon Phase</h4>
+                        <p className="text-xl font-bold text-indigo-200">{lunarData.moon_phase.replace('_', ' ')}</p>
+                        <p className="text-sm text-indigo-400">{lunarData.moon_phase_percent}% Illuminated</p>
                       </div>
 
-                      <div className={`p-4 rounded-lg ${lunarData.is_saturn_favorable ? 'bg-green-50' : 'bg-gray-50'}`}>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Saturn Influence</h4>
-                        <p className={`text-xl font-bold ${lunarData.is_saturn_favorable ? 'text-green-900' : 'text-gray-900'}`}>
+                      <div className={`glass-card p-4 ${lunarData.is_saturn_favorable ? 'border-green-400/50' : 'border-slate-400/50'}`}>
+                        <h4 className="text-sm font-medium text-slate-300 mb-2">Saturn Influence</h4>
+                        <p className={`text-xl font-bold ${lunarData.is_saturn_favorable ? 'text-green-300' : 'text-slate-300'}`}>
                           {lunarData.is_saturn_favorable ? 'Favorable' : 'Neutral'}
                         </p>
                       </div>
 
-                      <div className={`p-4 rounded-lg ${
-                        lunarData.market_bias === 'BULLISH' ? 'bg-green-50' : 
-                        lunarData.market_bias === 'BEARISH' ? 'bg-red-50' : 'bg-yellow-50'
+                      <div className={`glass-card p-4 ${
+                        lunarData.market_bias === 'BULLISH' ? 'border-green-400/50' : 
+                        lunarData.market_bias === 'BEARISH' ? 'border-red-400/50' : 'border-yellow-400/50'
                       }`}>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Market Bias</h4>
+                        <h4 className="text-sm font-medium text-slate-300 mb-2">Market Bias</h4>
                         <p className={`text-xl font-bold ${
-                          lunarData.market_bias === 'BULLISH' ? 'text-green-900' : 
-                          lunarData.market_bias === 'BEARISH' ? 'text-red-900' : 'text-yellow-900'
+                          lunarData.market_bias === 'BULLISH' ? 'text-green-300' : 
+                          lunarData.market_bias === 'BEARISH' ? 'text-red-300' : 'text-yellow-300'
                         }`}>
                           {lunarData.market_bias}
                         </p>
                       </div>
                     </div>
 
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="text-sm font-medium text-blue-700 mb-2">Optimal Trading Window</h4>
-                      <p className="text-lg font-medium text-blue-900">{lunarData.optimal_trading_window}</p>
+                    <div className="glass-card p-4">
+                      <h4 className="text-sm font-medium text-slate-300 mb-2">Optimal Trading Window</h4>
+                      <p className="text-lg font-medium vibrant-text">{lunarData.optimal_trading_window}</p>
                     </div>
                   </div>
                 )}
@@ -478,9 +494,9 @@ export default function SupportResistance() {
 
             {!multiTimeframeData && (
               <div className="text-center py-12">
-                <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No S/R Data Available</h3>
-                <p className="text-gray-600 mb-4">
+                <Target className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium gradient-text mb-2">No S/R Data Available</h3>
+                <p className="text-slate-300 mb-4">
                   Click &quot;Calculate S/R Levels&quot; to generate support/resistance analysis for {selectedETF}.
                 </p>
               </div>

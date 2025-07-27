@@ -103,32 +103,48 @@ export default function ShortInterest() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="floating-elements">
+          <div className="floating-circle"></div>
+          <div className="floating-circle"></div>
+          <div className="floating-circle"></div>
+        </div>
+        <div className="glass p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/30 mx-auto mb-4"></div>
+          <p className="text-slate-300">Loading Short Interest...</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen">
+      <div className="floating-elements">
+        <div className="floating-circle"></div>
+        <div className="floating-circle"></div>
+        <div className="floating-circle"></div>
+      </div>
+      
+      <header className="glass mx-4 mt-4 mb-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center space-x-2">
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
-                <span className="text-sm text-gray-600">Back to Dashboard</span>
+              <Link href="/" className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors">
+                <ArrowLeft className="w-5 h-5" />
+                <span className="text-sm">Back to Dashboard</span>
               </Link>
             </div>
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="w-8 h-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Short Interest</h1>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold gradient-text">Short Interest</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {user?.email}</span>
+              <span className="text-sm text-slate-300">Welcome, {user?.email}</span>
               <button
                 onClick={() => supabase.auth.signOut()}
-                className="text-gray-600 hover:text-gray-900 text-sm"
+                className="text-slate-300 hover:text-white text-sm transition-colors"
               >
                 Sign Out
               </button>
@@ -138,10 +154,10 @@ export default function ShortInterest() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow-sm rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Short Interest Analysis</h2>
-            <p className="text-sm text-gray-600 mt-1">
+        <div className="glass">
+          <div className="px-6 py-4 border-b border-white/20">
+            <h2 className="text-xl font-semibold gradient-text">Short Interest Analysis</h2>
+            <p className="text-sm text-slate-300 mt-1">
               Monitor short interest metrics and squeeze potential for SPY and IWM
             </p>
           </div>
@@ -151,7 +167,7 @@ export default function ShortInterest() {
               <button
                 onClick={handleFetchShortInterest}
                 disabled={fetching}
-                className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary-glass flex items-center space-x-2 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Download className="w-4 h-4" />
                 <span>{fetching ? 'Fetching...' : 'Fetch Short Interest'}</span>
@@ -160,15 +176,15 @@ export default function ShortInterest() {
               <select
                 value={selectedETF}
                 onChange={(e) => setSelectedETF(e.target.value as 'SPY' | 'IWM')}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="glass-card px-3 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
               >
-                <option value="SPY">SPY</option>
-                <option value="IWM">IWM</option>
+                <option value="SPY" className="bg-slate-800 text-slate-200">SPY</option>
+                <option value="IWM" className="bg-slate-800 text-slate-200">IWM</option>
               </select>
             </div>
 
             {message && (
-              <div className={`p-3 rounded-md ${message.includes('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+              <div className={`glass-card p-3 ${message.includes('Error') ? 'border-red-400/50 text-red-300' : 'border-green-400/50 text-green-300'}`}>
                 <p className="text-sm">{message}</p>
               </div>
             )}
@@ -178,19 +194,19 @@ export default function ShortInterest() {
                 {signals && (
                   <div className="flex flex-wrap gap-2">
                     {signals.elevated_short_interest && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium glass-card border-orange-400/50 text-orange-300">
                         <AlertTriangle className="w-4 h-4 mr-1" />
                         Elevated Short Interest
                       </span>
                     )}
                     {signals.cooling_shorts && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium glass-card border-blue-400/50 text-blue-300">
                         <TrendingDown className="w-4 h-4 mr-1" />
                         Cooling Shorts
                       </span>
                     )}
                     {signals.squeeze_watch && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium glass-card border-red-400/50 text-red-300">
                         <TrendingUp className="w-4 h-4 mr-1" />
                         Squeeze Watch
                       </span>
@@ -199,30 +215,30 @@ export default function ShortInterest() {
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Short Interest Ratio</h3>
-                    <p className="text-2xl font-bold text-gray-900">{selectedData.short_interest_ratio}</p>
-                    <p className="text-sm text-gray-600">Days to Cover</p>
+                  <div className="glass-card p-4">
+                    <h3 className="text-sm font-medium text-slate-300 mb-2">Short Interest Ratio</h3>
+                    <p className="text-2xl font-bold vibrant-text">{selectedData.short_interest_ratio}</p>
+                    <p className="text-sm text-slate-400">Days to Cover</p>
                   </div>
 
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">% of Float</h3>
-                    <p className="text-2xl font-bold text-gray-900">{selectedData.short_interest_percent_float}%</p>
-                    <p className="text-sm text-gray-600">Short Interest</p>
+                  <div className="glass-card p-4">
+                    <h3 className="text-sm font-medium text-slate-300 mb-2">% of Float</h3>
+                    <p className="text-2xl font-bold vibrant-text">{selectedData.short_interest_percent_float}%</p>
+                    <p className="text-sm text-slate-400">Short Interest</p>
                   </div>
 
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Total Shares Shorted</h3>
-                    <p className="text-2xl font-bold text-gray-900">{(selectedData.total_shares_shorted / 1000000).toFixed(1)}M</p>
-                    <p className="text-sm text-gray-600">Shares</p>
+                  <div className="glass-card p-4">
+                    <h3 className="text-sm font-medium text-slate-300 mb-2">Total Shares Shorted</h3>
+                    <p className="text-2xl font-bold vibrant-text">{(selectedData.total_shares_shorted / 1000000).toFixed(1)}M</p>
+                    <p className="text-sm text-slate-400">Shares</p>
                   </div>
 
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Last Report Date</h3>
-                    <p className="text-lg font-bold text-gray-900">
+                  <div className="glass-card p-4">
+                    <h3 className="text-sm font-medium text-slate-300 mb-2">Last Report Date</h3>
+                    <p className="text-lg font-bold gradient-text">
                       {new Date(selectedData.last_report_date).toLocaleDateString()}
                     </p>
-                    <p className="text-sm text-gray-600">Updated</p>
+                    <p className="text-sm text-slate-400">Updated</p>
                   </div>
                 </div>
               </div>
@@ -230,9 +246,9 @@ export default function ShortInterest() {
 
             {!selectedData && shortData.length === 0 && (
               <div className="text-center py-12">
-                <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Short Interest Data</h3>
-                <p className="text-gray-600 mb-4">
+                <BarChart3 className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium gradient-text mb-2">No Short Interest Data</h3>
+                <p className="text-slate-300 mb-4">
                   Click &quot;Fetch Short Interest&quot; to load the latest data for SPY and IWM.
                 </p>
               </div>

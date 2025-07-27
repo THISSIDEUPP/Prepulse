@@ -60,22 +60,30 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="floating-elements">
+        <div className="floating-circle"></div>
+        <div className="floating-circle"></div>
+        <div className="floating-circle"></div>
+      </div>
+      
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <Link href="/" className="flex items-center space-x-2">
-            <BarChart3 className="w-10 h-10 text-blue-600" />
-            <span className="text-2xl font-bold text-gray-900">PrePulse</span>
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+              <BarChart3 className="w-7 h-7" />
+            </div>
+            <span className="text-2xl font-bold gradient-text">PrePulse</span>
           </Link>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-extrabold gradient-text">
           {isSignUp ? 'Create your account' : 'Sign in to your account'}
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-slate-300">
           {isSignUp ? 'Already have an account?' : "Don&apos;t have an account?"}{' '}
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="font-medium text-blue-600 hover:text-blue-500"
+            className="font-medium vibrant-text hover:opacity-80 transition-opacity"
           >
             {isSignUp ? 'Sign in' : 'Sign up'}
           </button>
@@ -83,12 +91,12 @@ export default function Auth() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="glass py-8 px-4 sm:px-10">
           {isDemoMode && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="mb-4 glass-card p-3 border-blue-400/50">
               <div className="flex items-center space-x-2">
-                <Info className="w-4 h-4 text-blue-600" />
-                <p className="text-sm text-blue-700">
+                <Info className="w-4 h-4 text-blue-300" />
+                <p className="text-sm text-blue-200">
                   <strong>Demo Mode:</strong> Using mock authentication. Any email/password will work for testing.
                 </p>
               </div>
@@ -97,12 +105,12 @@ export default function Auth() {
 
           <form className="space-y-6" onSubmit={handleAuth}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-300">
                 Email address
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-slate-400" />
                 </div>
                 <input
                   id="email"
@@ -112,19 +120,19 @@ export default function Auth() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="glass-card appearance-none block w-full pl-10 pr-3 py-2 placeholder-slate-400 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400/50 sm:text-sm"
                   placeholder="Enter your email"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-300">
                 Password
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+                  <Lock className="h-5 w-5 text-slate-400" />
                 </div>
                 <input
                   id="password"
@@ -134,14 +142,14 @@ export default function Auth() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="glass-card appearance-none block w-full pl-10 pr-3 py-2 placeholder-slate-400 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-400/50 sm:text-sm"
                   placeholder="Enter your password"
                 />
               </div>
             </div>
 
             {message && (
-              <div className={`p-3 rounded-md ${message.includes('Check your email') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+              <div className={`glass-card p-3 ${message.includes('Check your email') ? 'border-green-400/50 text-green-300' : 'border-red-400/50 text-red-300'}`}>
                 <p className="text-sm">{message}</p>
               </div>
             )}
@@ -150,10 +158,10 @@ export default function Auth() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary-glass w-full flex justify-center py-2 px-4 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white/30"></div>
                 ) : (
                   isSignUp ? 'Sign up' : 'Sign in'
                 )}
