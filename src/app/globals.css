@@ -1,30 +1,39 @@
 @import "tailwindcss";
 
-/* Glassmorphic Design System */
+/* Neon Glassmorphic Design System */
 :root {
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --accent-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --vibrant-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-  --background: #667eea;
-  --foreground: #e2e8f0;
+  --glass-bg: rgba(57, 255, 20, 0.1);
+  --glass-border: rgba(57, 255, 20, 0.3);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --neon-green: #39FF14;
+  --neon-lime: #32CD32;
+  --dark-bg: #0A0A0A;
+  --primary-gradient: linear-gradient(135deg, #39FF14 0%, #32CD32 100%);
+  --accent-gradient: linear-gradient(135deg, #39FF14 0%, #00FF7F 100%);
+  --success-gradient: linear-gradient(135deg, #39FF14 0%, #32CD32 100%);
+  --vibrant-gradient: linear-gradient(135deg, #39FF14 0%, #32CD32 50%, #00FF7F 100%);
+  --background: #0A0A0A;
+  --foreground: #39FF14;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--dark-bg);
   min-height: 100vh;
-  color: #e2e8f0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--neon-green);
+  font-family: var(--font-inter), sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-manrope), sans-serif;
+  font-weight: 700;
+  color: var(--neon-green);
 }
 
 body::before {
@@ -35,62 +44,74 @@ body::before {
   width: 100%;
   height: 100%;
   background: 
-    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+    radial-gradient(circle at 20% 80%, rgba(57, 255, 20, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(50, 205, 50, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(0, 255, 127, 0.05) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
 }
 
 .glass {
-  background: var(--glass-bg);
+  background: rgba(10, 10, 10, 0.85);
   backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--neon-green);
   border-radius: 20px;
-  box-shadow: var(--glass-shadow);
+  box-shadow: 0 0 8px var(--neon-green), var(--glass-shadow);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(10, 10, 10, 0.85);
   backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--neon-green);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 8px var(--neon-green), 0 4px 20px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
 }
 
 .glass-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 16px var(--neon-green), 0 12px 40px rgba(0, 0, 0, 0.5);
+  border-color: var(--neon-lime);
+}
+
+.glow-box {
+  border: 1px solid var(--neon-green);
+  box-shadow: 0 0 8px var(--neon-green);
+  background-color: rgba(10, 10, 10, 0.85);
+  padding: 1rem;
+  border-radius: 8px;
 }
 
 .btn-glass {
-  background: var(--glass-bg);
+  background: rgba(10, 10, 10, 0.85);
   backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--neon-green);
   border-radius: 12px;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
-  transition: all 0.3s ease;
-  color: #f8fafc;
+  transition: all 0.3s ease, text-shadow 0.3s ease;
+  color: var(--neon-green);
 }
 
 .btn-glass:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 8px var(--neon-green), 0 8px 25px rgba(0, 0, 0, 0.4);
+  background: rgba(10, 10, 10, 0.9);
+  color: var(--neon-lime);
+  text-shadow: 0 0 8px var(--neon-green);
 }
 
 .btn-primary-glass {
   background: var(--primary-gradient);
-  color: white;
+  color: var(--dark-bg);
   border: none;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 0 8px var(--neon-green), 0 4px 15px rgba(57, 255, 20, 0.4);
+  font-weight: 600;
 }
 
 .btn-primary-glass:hover {
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 0 16px var(--neon-green), 0 8px 25px rgba(57, 255, 20, 0.6);
+  text-shadow: 0 0 8px var(--neon-green);
 }
 
 .floating-elements {
@@ -140,10 +161,9 @@ body::before {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--neon-green);
+  font-weight: 600;
+  text-shadow: 0 0 4px var(--neon-green);
 }
 
 .vibrant-text {
@@ -151,6 +171,23 @@ body::before {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-shadow: 0 0 4px var(--neon-green);
+}
+
+.highlight, .card-title {
+  color: var(--neon-green);
+  font-weight: 600;
+  text-shadow: 0 0 4px var(--neon-green);
+}
+
+a, button {
+  color: var(--neon-green);
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+a:hover, button:hover {
+  color: var(--neon-lime);
+  text-shadow: 0 0 8px var(--neon-green);
 }
 
 .status-bullish {
