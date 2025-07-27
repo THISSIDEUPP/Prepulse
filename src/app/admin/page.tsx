@@ -113,6 +113,7 @@ export default function Admin() {
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ date: formData.date }),
       })
 
       if (!response.ok) throw new Error('Failed to fetch market data')
@@ -124,6 +125,7 @@ export default function Admin() {
         const fetchedMarketData = result.results
           .filter((r: { success: boolean; data?: unknown[] }) => r.success)
           .flatMap((r: { success: boolean; data: unknown[] }) => r.data)
+          .filter((data: { date: string }) => data.date === formData.date)
         
         console.log('Fetched market data:', fetchedMarketData)
         setMarketData(fetchedMarketData)
@@ -243,7 +245,7 @@ export default function Admin() {
           <div className="p-6 space-y-6">
             {marketData.length > 0 && (
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Today&apos;s Market Data</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Market Data for {formData.date}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {marketData.map((data) => (
                     <div key={data.symbol} className="bg-white p-3 rounded border">

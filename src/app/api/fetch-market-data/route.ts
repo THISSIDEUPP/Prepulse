@@ -148,8 +148,10 @@ async function getHistoricalPrices(symbol: string, days: number = 30): Promise<n
   }
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const body = await request.json().catch(() => ({}))
+    const targetDate = body?.date || new Date().toISOString().split('T')[0]
     const symbols = ['SPY', 'IWM']
     const results = []
 
@@ -164,6 +166,8 @@ export async function POST() {
       const marketDataBatch = []
       
       for (const quote of historicalQuotes) {
+        if (quote.date !== targetDate) continue
+        
         const existingPrices = await getHistoricalPrices(symbol, 30)
         const allPrices = [...existingPrices, quote.regularMarketPrice]
 
@@ -193,6 +197,8 @@ export async function POST() {
 
       if (error) {
         results.push({ symbol, success: false, error: error.message })
+      } else if (marketDataBatch.length === 0) {
+        results.push({ symbol, success: false, error: `No data available for ${targetDate}` })
       } else {
         results.push({ symbol, success: true, data: marketDataBatch })
       }
