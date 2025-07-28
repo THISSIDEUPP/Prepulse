@@ -1,5 +1,7 @@
+import { BaseMCPClient, ETFSymbol } from './base-mcp-client'
+
 export interface RealTimeSupportResistanceData {
-  symbol: 'SPY' | 'IWM'
+  symbol: ETFSymbol
   currentPrice: number
   support1: number
   support2: number
@@ -40,23 +42,16 @@ const mockSupportResistanceData = {
   }
 }
 
-export class MCPSupportResistanceClient {
-  private connected = false
+export class MCPSupportResistanceClient extends BaseMCPClient<RealTimeSupportResistanceData> {
+  protected clientName = 'MCP Support/Resistance Client'
 
-  async connect() {
-    try {
-      console.log('MCP Support/Resistance Client connected (mock mode)')
-      this.connected = true
-      return true
-    } catch (error) {
-      console.error('Failed to connect MCP support/resistance client:', error)
-      return false
-    }
+  async getData(symbol: ETFSymbol): Promise<RealTimeSupportResistanceData | null> {
+    return this.getSupportResistanceData(symbol)
   }
 
-  async getSupportResistanceData(symbol: 'SPY' | 'IWM'): Promise<RealTimeSupportResistanceData | null> {
-    if (!this.connected) {
-      console.warn('MCP support/resistance client not connected')
+  async getSupportResistanceData(symbol: ETFSymbol): Promise<RealTimeSupportResistanceData | null> {
+    if (!this.isConnected()) {
+      this.logConnectionWarning()
       return null
     }
 
@@ -84,14 +79,10 @@ export class MCPSupportResistanceClient {
         timestamp: new Date().toISOString()
       }
     } catch (error) {
-      console.error('Failed to get support/resistance data:', error)
+      this.logDataError(error)
     }
 
     return null
-  }
-
-  async disconnect() {
-    this.connected = false
   }
 }
 

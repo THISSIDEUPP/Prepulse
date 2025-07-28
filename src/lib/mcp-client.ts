@@ -1,5 +1,7 @@
+import { BaseMCPClient, ETFSymbol } from './base-mcp-client'
+
 export interface RealTimeMarketData {
-  symbol: 'SPY' | 'IWM'
+  symbol: ETFSymbol
   price: number
   change: number
   changePercent: number
@@ -22,23 +24,16 @@ const mockMarketData = {
   }
 }
 
-export class MCPMarketDataClient {
-  private connected = false
+export class MCPMarketDataClient extends BaseMCPClient<RealTimeMarketData> {
+  protected clientName = 'MCP Market Data Client'
 
-  async connect() {
-    try {
-      console.log('MCP Market Data Client connected (mock mode)')
-      this.connected = true
-      return true
-    } catch (error) {
-      console.error('Failed to connect MCP client:', error)
-      return false
-    }
+  async getData(symbol: ETFSymbol): Promise<RealTimeMarketData | null> {
+    return this.getRealTimeData(symbol)
   }
 
-  async getRealTimeData(symbol: 'SPY' | 'IWM'): Promise<RealTimeMarketData | null> {
-    if (!this.connected) {
-      console.warn('MCP client not connected')
+  async getRealTimeData(symbol: ETFSymbol): Promise<RealTimeMarketData | null> {
+    if (!this.isConnected()) {
+      this.logConnectionWarning()
       return null
     }
 
@@ -62,14 +57,10 @@ export class MCPMarketDataClient {
         timestamp: new Date().toISOString()
       }
     } catch (error) {
-      console.error('Failed to get real-time data:', error)
+      this.logDataError(error)
     }
 
     return null
-  }
-
-  async disconnect() {
-    this.connected = false
   }
 }
 

@@ -1,5 +1,7 @@
+import { BaseMCPClient, ETFSymbol } from './base-mcp-client'
+
 export interface RealTimeShortInterestData {
-  symbol: 'SPY' | 'IWM'
+  symbol: ETFSymbol
   shortInterest: number
   sharesOutstanding: number
   shortRatio: number
@@ -28,23 +30,16 @@ const mockShortInterestData = {
   }
 }
 
-export class MCPShortInterestClient {
-  private connected = false
+export class MCPShortInterestClient extends BaseMCPClient<RealTimeShortInterestData> {
+  protected clientName = 'MCP Short Interest Client'
 
-  async connect() {
-    try {
-      console.log('MCP Short Interest Client connected (mock mode)')
-      this.connected = true
-      return true
-    } catch (error) {
-      console.error('Failed to connect MCP short interest client:', error)
-      return false
-    }
+  async getData(symbol: ETFSymbol): Promise<RealTimeShortInterestData | null> {
+    return this.getShortInterestData(symbol)
   }
 
-  async getShortInterestData(symbol: 'SPY' | 'IWM'): Promise<RealTimeShortInterestData | null> {
-    if (!this.connected) {
-      console.warn('MCP short interest client not connected')
+  async getShortInterestData(symbol: ETFSymbol): Promise<RealTimeShortInterestData | null> {
+    if (!this.isConnected()) {
+      this.logConnectionWarning()
       return null
     }
 
@@ -68,14 +63,10 @@ export class MCPShortInterestClient {
         timestamp: new Date().toISOString()
       }
     } catch (error) {
-      console.error('Failed to get short interest data:', error)
+      this.logDataError(error)
     }
 
     return null
-  }
-
-  async disconnect() {
-    this.connected = false
   }
 }
 
