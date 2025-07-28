@@ -30,43 +30,56 @@ export class N8nClient {
   }
 
   async getWorkflows(): Promise<N8nWorkflow[]> {
-    const response = await fetch(`${this.baseUrl}/api/v1/workflows`, {
-      headers: {
-        'Authorization': `Basic ${this.getAuth()}`,
-        'Content-Type': 'application/json'
+    try {
+      const response = await fetch('/api/n8n-proxy?endpoint=workflows', {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        console.warn(`n8n proxy returned ${response.status}: ${response.statusText}`)
+        return []
       }
-    })
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch workflows: ${response.statusText}`)
+      const data = await response.json()
+      return data.data || []
+    } catch (error) {
+      console.warn('Failed to connect to n8n server:', error)
+      return []
     }
-
-    const data = await response.json()
-    return data.data || []
   }
 
   async activateWorkflow(workflowId: string): Promise<boolean> {
-    const response = await fetch(`${this.baseUrl}/api/v1/workflows/${workflowId}/activate`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${this.getAuth()}`,
-        'Content-Type': 'application/json'
-      }
-    })
+    try {
+      const response = await fetch(`/api/n8n-proxy?endpoint=workflows/${workflowId}/activate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
 
-    return response.ok
+      return response.ok
+    } catch (error) {
+      console.warn('Failed to activate workflow:', error)
+      return false
+    }
   }
 
   async deactivateWorkflow(workflowId: string): Promise<boolean> {
-    const response = await fetch(`${this.baseUrl}/api/v1/workflows/${workflowId}/deactivate`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${this.getAuth()}`,
-        'Content-Type': 'application/json'
-      }
-    })
+    try {
+      const response = await fetch(`/api/n8n-proxy?endpoint=workflows/${workflowId}/deactivate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
 
-    return response.ok
+      return response.ok
+    } catch (error) {
+      console.warn('Failed to deactivate workflow:', error)
+      return false
+    }
   }
 }
 

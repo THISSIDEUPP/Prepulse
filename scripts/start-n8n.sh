@@ -3,10 +3,10 @@
 echo "Starting PrePulse n8n integration..."
 
 if [ -f .env.n8n ]; then
-  export $(cat .env.n8n | xargs)
+  export $(cat .env.n8n | grep -v '^#' | xargs)
 fi
 
-docker-compose up -d
+docker compose up -d
 
 echo "Waiting for n8n to start..."
 sleep 10
