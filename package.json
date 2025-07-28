@@ -9,7 +9,10 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "n8n:start": "docker-compose up -d",
+    "n8n:stop": "docker-compose down",
+    "n8n:logs": "docker-compose logs -f n8n"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.0",

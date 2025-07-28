@@ -1,0 +1,126 @@
+{
+  "name": "Price Movement Alerts",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/5 * * * *"
+            }
+          ]
+        }
+      },
+      "name": "Every 5 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/get-market-data",
+        "options": {
+          "queryParameters": {
+            "symbol": "SPY,IWM",
+            "limit": "2"
+          }
+        }
+      },
+      "name": "Get Current Prices",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ Math.abs($json.change_percent) }}",
+              "operation": "larger",
+              "value2": 2
+            }
+          ]
+        }
+      },
+      "name": "Check Significant Movement",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "users",
+        "options": {
+          "where": "is_admin = true",
+          "select": "email"
+        }
+      },
+      "name": "Get Admin Users",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "alerts@prepulse.dev",
+        "toEmail": "={{ $json.email }}",
+        "subject": "🚨 PrePulse Alert: Significant Price Movement",
+        "emailFormat": "html",
+        "message": "=<div>{{ $node['Get Current Prices'].json.symbol }} moved {{ $node['Get Current Prices'].json.change_percent }}%</div>"
+      },
+      "name": "Send Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Every 5 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Get Current Prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current Prices": {
+      "main": [
+        [
+          {
+            "node": "Check Significant Movement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Significant Movement": {
+      "main": [
+        [
+          {
+            "node": "Get Admin Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Admin Users": {
+      "main": [
+        [
+          {
+            "node": "Send Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

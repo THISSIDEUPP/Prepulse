@@ -72,6 +72,30 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
 
+## 🤖 n8n Automation Integration
+
+PrePulse includes n8n workflow automation for:
+- Daily market summary emails
+- Price movement alerts
+- Data pipeline automation
+- External system integrations
+
+### Setup n8n
+
+1. Start n8n services:
+   ```bash
+   npm run n8n:start
+   ```
+
+2. Access n8n interface:
+   - URL: http://localhost:5678
+   - Username: admin
+   - Password: (set in .env.n8n file)
+
+3. Import workflow templates from `n8n-workflows/templates/`
+
+4. Configure Supabase credentials in n8n settings
+
 ## 📊 Database Schema
 
 The application uses two main tables:

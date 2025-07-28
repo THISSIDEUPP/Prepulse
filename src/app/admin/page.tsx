@@ -3,9 +3,10 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/supabase/client'
 import { useRouter } from 'next/navigation'
-import { BarChart3, Save, Send, ArrowLeft, Download, Zap, RefreshCw } from 'lucide-react'
+import { BarChart3, Save, Send, ArrowLeft, Download, Zap, RefreshCw, Play, Pause } from 'lucide-react'
 import Link from 'next/link'
 import { MarketData } from '@/types'
+import { n8nClient, N8nWorkflow } from '@/lib/n8n-client'
 
 interface AuthUser {
   id: string
@@ -18,6 +19,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [sending, setSending] = useState(false)
+  const [n8nWorkflows, setN8nWorkflows] = useState<N8nWorkflow[]>([])
   const [fetching, setFetching] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [message, setMessage] = useState('')
@@ -58,6 +60,7 @@ export default function Admin() {
   useEffect(() => {
     const timer = setTimeout(() => {
       checkUser()
+      loadN8nWorkflows()
     }, 100)
     
     return () => clearTimeout(timer)
@@ -200,6 +203,15 @@ export default function Admin() {
       setMessage(`Error sending email: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSending(false)
+    }
+  }
+
+  const loadN8nWorkflows = async () => {
+    try {
+      const workflows = await n8nClient.getWorkflows()
+      setN8nWorkflows(workflows)
+    } catch (error) {
+      console.error('Error loading n8n workflows:', error)
     }
   }
 
@@ -442,6 +454,53 @@ export default function Admin() {
                 <Send className="w-4 h-4" />
                 <span>{sending ? 'Sending...' : 'Send Email Alert'}</span>
               </button>
+            </div>
+          </div>
+
+          {/* n8n Workflow Management */}
+          <div className="glass p-6 mt-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold gradient-text mb-2">Automation Workflows</h2>
+              <p className="text-sm text-slate-300">
+                Manage n8n automation workflows for alerts and data processing
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              {n8nWorkflows.length > 0 ? (
+                n8nWorkflows.map((workflow) => (
+                  <div key={workflow.id} className="glass-card p-4 flex justify-between items-center">
+                    <div>
+                      <h3 className="font-medium text-white">{workflow.name}</h3>
+                      <p className="text-sm text-slate-300">
+                        Status: <span className={workflow.active ? 'text-green-400' : 'text-red-400'}>
+                          {workflow.active ? 'Active' : 'Inactive'}
+                        </span>
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => workflow.active ? 
+                        n8nClient.deactivateWorkflow(workflow.id) : 
+                        n8nClient.activateWorkflow(workflow.id)
+                      }
+                      className={`btn-glass px-3 py-1 text-sm flex items-center space-x-1 ${
+                        workflow.active ? 'text-red-400 hover:text-red-300' : 'text-green-400 hover:text-green-300'
+                      }`}
+                    >
+                      {workflow.active ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                      <span>{workflow.active ? 'Deactivate' : 'Activate'}</span>
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="glass-card p-6 text-center">
+                  <Zap className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-slate-300 mb-2">No n8n workflows found</p>
+                  <p className="text-sm text-slate-400">
+                    Start n8n server and import workflow templates to see automation options
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

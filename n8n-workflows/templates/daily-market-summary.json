@@ -1,0 +1,121 @@
+{
+  "name": "Daily Market Summary",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 30 8 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "market_pulse",
+        "options": {
+          "orderBy": "date DESC",
+          "limit": 1
+        }
+      },
+      "name": "Get Latest Pulse",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "market_data",
+        "options": {
+          "where": "symbol IN ('SPY', 'IWM') AND date = CURRENT_DATE",
+          "orderBy": "symbol"
+        }
+      },
+      "name": "Get Market Data",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "users",
+        "options": {
+          "select": "email"
+        }
+      },
+      "name": "Get Users",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@prepulse.dev",
+        "toEmail": "={{ $json.email }}",
+        "subject": "📈 PrePulse Daily Summary - {{ new Date().toLocaleDateString() }}",
+        "emailFormat": "html",
+        "message": "=<div>Daily market summary content here</div>"
+      },
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Latest Pulse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Pulse": {
+      "main": [
+        [
+          {
+            "node": "Get Market Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Market Data": {
+      "main": [
+        [
+          {
+            "node": "Get Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Users": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
