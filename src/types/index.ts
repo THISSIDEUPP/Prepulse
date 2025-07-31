@@ -118,3 +118,23 @@ export interface LunarSignals {
   mercury_retrograde_warning: boolean
   optimal_entry_timing: boolean
 }
+
+export interface FVSResult {
+  ticker: string
+  option_type: 'call' | 'put'
+  strike: number
+  expiry: string
+  spot_price: number
+  market_price: number
+  fair_value: number
+  tag: 'Underpriced' | 'Overpriced' | 'Fairly Priced'
+  implied_volatility: number
+  time_to_expiration: number
+}
+
+export interface FVSFormData {
+  ticker: string
+  strike: string
+  expiry: string
+  type: 'call' | 'put'
+}

@@ -95,6 +95,9 @@ export default function Home() {
                   <Link href="/support-resistance" className="btn-glass text-sm">
                     S/R Levels
                   </Link>
+                  <Link href="/fvs" className="btn-glass text-sm">
+                    Fair Value Scanner
+                  </Link>
                   {user.role === 'admin' && (
                     <Link href="/admin" className="btn-primary-glass text-sm">
                       Admin
