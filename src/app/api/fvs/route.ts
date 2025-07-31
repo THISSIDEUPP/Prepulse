@@ -97,7 +97,7 @@ async function fetchOptionPrice(ticker: string, strike: number, expiry: string, 
       const optionsData = optionType === 'call' ? options?.calls : options?.puts
       
       if (optionsData) {
-        const option = optionsData.find((opt: any) => Math.abs(opt.strike - strike) < 0.01)
+        const option = optionsData.find((opt: { strike: number; lastPrice?: number }) => Math.abs(opt.strike - strike) < 0.01)
         if (option?.lastPrice) return option.lastPrice
       }
     }
@@ -129,9 +129,17 @@ export async function GET(request: NextRequest) {
     const expiry = searchParams.get('expiry')
     const optionType = searchParams.get('type')?.toLowerCase() as 'call' | 'put'
 
-    if (!ticker || !strike || !expiry || !['call', 'put'].includes(optionType)) {
+
+    if (!ticker || !strike || !optionType || !['call', 'put'].includes(optionType)) {
       return NextResponse.json(
         { error: 'Invalid input parameters. Required: ticker, strike, expiry, type (call/put)' },
+        { status: 400 }
+      )
+    }
+
+    if (!expiry || expiry.trim() === '') {
+      return NextResponse.json(
+        { error: 'Expiry date is required. Please select a valid future date.' },
         { status: 400 }
       )
     }
@@ -139,16 +147,26 @@ export async function GET(request: NextRequest) {
     const strikePrice = parseFloat(strike)
     if (isNaN(strikePrice) || strikePrice <= 0) {
       return NextResponse.json(
-        { error: 'Invalid strike price' },
+        { error: 'Invalid strike price. Must be a positive number.' },
         { status: 400 }
       )
     }
 
     const expiryDate = new Date(expiry)
     const today = new Date()
-    if (isNaN(expiryDate.getTime()) || expiryDate <= today) {
+    today.setHours(0, 0, 0, 0)
+    
+    
+    if (isNaN(expiryDate.getTime())) {
       return NextResponse.json(
-        { error: 'Invalid expiry date. Must be in YYYY-MM-DD format and in the future' },
+        { error: 'Invalid expiry date format. Please use YYYY-MM-DD format.' },
+        { status: 400 }
+      )
+    }
+    
+    if (expiryDate <= today) {
+      return NextResponse.json(
+        { error: 'Expiry date must be in the future. Please select a date after today.' },
         { status: 400 }
       )
     }
@@ -211,8 +229,7 @@ export async function GET(request: NextRequest) {
       implied_volatility: impliedVolatility,
       time_to_expiration: Math.round(timeToExpiration * 365 * 100) / 100
     })
-  } catch (error) {
-    console.error('FVS API error:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -42,7 +42,6 @@ export default function FairValueScanner() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    console.log(`Form input changed: ${name} = ${value}`)
     setFormData(prev => ({ ...prev, [name]: value }))
     setError('')
     setResult(null)
@@ -50,7 +49,6 @@ export default function FairValueScanner() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Form submitted with data:', formData)
     setScanning(true)
     setError('')
     setResult(null)
@@ -63,7 +61,6 @@ export default function FairValueScanner() {
         type: formData.type
       })
 
-      console.log('API request params:', params.toString())
       const response = await fetch(`/api/fvs?${params}`)
       const data = await response.json()
 
@@ -210,6 +207,13 @@ export default function FairValueScanner() {
                     name="expiry"
                     value={formData.expiry}
                     onChange={handleInputChange}
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement
+                      const syntheticEvent = {
+                        target: { name: 'expiry', value: target.value, type: 'date' }
+                      } as React.ChangeEvent<HTMLInputElement>
+                      handleInputChange(syntheticEvent)
+                    }}
                     min={new Date().toISOString().split('T')[0]}
                     className="w-full px-3 py-2 glass-card text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
                     required
